@@ -104,5 +104,8 @@ class Logger:
                             AnsiColorFormatter.no_style}")
 
 
-Logger.test_log("test", "test_log()")
 logger = Logger.logger
+
+
+if __name__ == "__main__":
+    Logger.test_log("test", "test_log()")

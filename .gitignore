@@ -205,3 +205,16 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Local testing 
+logs/
+
+# Private files
+*.priv.*
+.priv/
+.data/
+.output/
+
+# Temporary ignore, should be updated for clarity
+sample-data/
+*.todo.*
