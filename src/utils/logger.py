@@ -93,19 +93,14 @@ class Logger:
     logger.warning("Testing Warning Message")
     logger.error("Testing Error Message")
 
-    def test_log(*args):
-        print(
-            f"\n>>> {
-                AnsiColorFormatter.blue_light_bg}{
-                AnsiColorFormatter.black}{
-                '\n'.join(
-                    [
-                        str(arg) for arg in args])}{
-                            AnsiColorFormatter.no_style}")
-
 
 logger = Logger.logger
 
 
+def test_log(*args):
+    print(f"\n>>> {AnsiColorFormatter.blue_light_bg}{AnsiColorFormatter.black}\
+          {'\n'.join([str(arg) for arg in args])}{AnsiColorFormatter.no_style}")
+
+
 if __name__ == "__main__":
-    Logger.test_log("test", "test_log()")
+    test_log("test", "test_log()")

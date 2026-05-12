@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pandas as pd
 from pandas import DataFrame, Series
-from typing import List, Optional, Dict, Callable, Optional
+from typing import List, Dict, Callable
 
 
 # Support import from project root
@@ -13,11 +13,11 @@ project_root = str(Path(__file__).parent.parent.parent)
 sys.path.append(project_root)
 from src.enum.column import Column
 from src.enum.currency import Currency
-from src.enum.category import Category, CategoryInflow, CategoryOutflow
+from src.enum.category import CategoryInflow, CategoryOutflow
 from src.enum.account import Account
 from src.enum.cashflow_direction import CashflowDirection
 from src.parse_strategy.parse_strategy_base import ParseStrategyBase
-from src.utils.logger import Logger, logger
+from src.utils.logger import logger
 
 
 class AlipayColumn(Enum):
@@ -71,31 +71,12 @@ ALIPAY_OUTFLOW_CATEGORY_MAPPING: Dict[str, Callable[[Series | None], CategoryOut
 
 
 class AlipayParseStrategy(ParseStrategyBase):
-    file_extension = "csv"
-    encoding = 'gbk'
-    data_dir_path = Path(".data/alipay")
-    output_dir_path = Path(".output/alipay")
-    output_dir_path.mkdir(parents=True, exist_ok=True)
-
     account = Account.ALIPAY
     currency = Currency.CNY
+    file_extension = "csv"
+    encoding = 'gbk'
+
     refund_category = "退款"
-
-    # @classmethod
-    # def account(cls) -> Account:
-    #     return cls.account
-
-    # @classmethod
-    # def output_dir_path(cls) -> Path:
-    #     return cls.output_dir_path
-
-    @classmethod
-    def build_output_file_path(cls, input_file_path: str) -> str:
-        # `.data/alipay/支付宝交易明细(20251215-20260315).csv` -> `(20251215-20260315)`
-        file_date = str(input_file_path).split('/')[-1][7:26]  # TODO: handle different separator for different OS
-
-        # .output/ALIPAY(20251215-20260315).csv
-        return cls.output_dir_path / f"{cls.account.name}{file_date}.csv"
 
     @classmethod
     def load_data(cls, file_path: Path) -> DataFrame:
@@ -156,6 +137,11 @@ class AlipayParseStrategy(ParseStrategyBase):
         output_row[Column.IS_REFUND.value] = row[AlipayColumn.CATEGORY.column_name] == cls.refund_category
 
         return output_row
+
+    @classmethod
+    def fetch_input_file_date(cls, input_file_path: str) -> str:
+        # `.data/alipay/支付宝交易明细(20251215-20260315).csv` -> `(20251215-20260315)`
+        return str(input_file_path).split('/')[-1][7:26]  # TODO: handle different separator for different OS
 
 
 if __name__ == "__main__":
