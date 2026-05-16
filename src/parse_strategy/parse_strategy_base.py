@@ -33,12 +33,17 @@ class ParseStrategyBase(ABC):
         pass
 
     @classmethod
-    def get_data_dir_path(cls) -> str:
+    def get_data_dir_path(cls) -> Path:
         return Path(f".data/{str(cls.account.name).lower()}")
 
     @classmethod
-    def ensure_output_dir_path(cls) -> str:
-        output_dir_path = Path(f".output/.{str(cls.account.name).lower()}")
+    def get_output_dir_path(cls) -> Path:
+        '''Defines where the output file should be stored.'''
+        return Path(f".output/.{str(cls.account.name).lower()}")
+
+    @classmethod
+    def ensure_output_dir_path(cls) -> Path:
+        output_dir_path = cls.get_output_dir_path()
         output_dir_path.mkdir(parents=True, exist_ok=True)
         return output_dir_path
 
@@ -52,26 +57,29 @@ class ParseStrategyBase(ABC):
     @classmethod
     def process_file(cls, file_path: Path) -> None:
         try:
+            logger.info(f"Start loading data for file `{file_path}`")
             data: DataFrame = cls.load_data(file_path)
+
+            logger.info(f"Data loaded, start parsing rows for file `{file_path}`")
             parsed_data = data.apply(cls.parse_row, axis=1, result_type='reduce')
 
-            # write to output
+            # write to output file
+            logger.info(f"Rows parsed, start writing output for input file `{file_path}`")
             parsed_data.to_csv(cls.build_output_file_path(file_path), index=False, encoding="utf-8", mode="w")
 
-            logger.info(f"Successfully processed file ({file_path})")
+            logger.info(f"Successfully processed file `{file_path}`")
         except Exception as e:
-            logger.error(f"Error in processing file ({file_path}): {e}")
+            logger.error(f"Error in processing file `{file_path}`: {e}")
 
     @classmethod
     def execute(cls) -> None:
         data_dir_path = cls.get_data_dir_path()
         pattern = f"*.{cls.file_extension}"
         import os
-        test_log(os.listdir("."))
         logger.info(f"Start parsing files with pattern {pattern} in {os.getcwd()}/{data_dir_path}")
 
         data_files_path = list(data_dir_path.glob(pattern=pattern))
-        logger.info(f"Files to process: {[str(file_path) for file_path in data_files_path]}")
+        logger.info(f"All files to process: {[str(file_path) for file_path in data_files_path]}")
 
         for file_path in data_files_path:
             cls.process_file(file_path)

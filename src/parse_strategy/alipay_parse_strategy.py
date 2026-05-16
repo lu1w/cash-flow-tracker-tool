@@ -51,7 +51,7 @@ ALIPAY_CASHFLOW_DIRECTION: Dict[str, CashflowDirection] = {
 
 ALIPAY_INFLOW_CATEGORY_MAPPING: Dict[str, Callable[[Series], CategoryInflow]] = {
     "退款": lambda _: CategoryInflow.REFUND.name,
-    "转账红包": lambda s: CategoryInflow.TRANSACTION.name if s[AlipayColumn.ITEM_DETAIL.column_name] == "转账" else CategoryInflow.GIFT.name
+    "转账红包": lambda row: CategoryInflow.TRANSACTION.name if row[AlipayColumn.ITEM_DETAIL.column_name] == "转账" else CategoryInflow.GIFT.name
 }
 
 # TODO: implementation of the non-deterministic mapping functions
@@ -80,8 +80,6 @@ class AlipayParseStrategy(ParseStrategyBase):
 
     @classmethod
     def load_data(cls, file_path: Path) -> DataFrame:
-        logger.info(f"Start loading data for file {file_path}")
-
         try:
             columns_to_drop = AlipayColumn.get_unuseful_columns()
             try:
@@ -96,7 +94,7 @@ class AlipayParseStrategy(ParseStrategyBase):
                 cls.encoding = "utf-8"
                 data = pd.read_csv(file_path, skiprows=24, encoding=cls.encoding).drop(columns_to_drop, axis=1)
 
-            logger.info(f"Data (encoding={cls.encoding}) loaded successfull from file {file_path}.")
+            logger.info(f"Data (encoding={cls.encoding}) loaded successfull from file {file_path}")
 
             return data
 
@@ -106,9 +104,9 @@ class AlipayParseStrategy(ParseStrategyBase):
 
     @classmethod
     def parse_row(cls, row: Series) -> Series:
-        # output_data: Dict[str, str] = {}
         cashflow_direction = ALIPAY_CASHFLOW_DIRECTION[row[AlipayColumn.CASHFLOW_DIRECTION.column_name]]
 
+        # Populate output
         output_row: Series = Series([])
 
         output_row[Column.DATE.value] = row[AlipayColumn.DATE_TIME.column_name]

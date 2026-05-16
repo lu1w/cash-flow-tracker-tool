@@ -7,7 +7,7 @@ class Column(Enum):
     '''Output columns'''
     DATE = "Date"
     CATEGORY = "Category"
-    CATEGORY_RAW = "RAW Category"
+    CATEGORY_RAW = "RAW Category"  # Row category from the report files
     CURRENCY = "Currency"
     CASHFLOW_DIRECTION = f"{CashflowDirection.INFLOW.text}(+)/{CashflowDirection.OUTFLOW.text}(-)"
     AMOUNT_ABSOLUTE = "Absolute Amount"

@@ -3,7 +3,7 @@ import sys
 import pandas as pd
 from enum import Enum
 from pathlib import Path
-from typing import List
+from typing import List, Dict
 
 # Support import from project root
 project_root = str(Path(__file__).parent.parent.parent)
@@ -11,6 +11,7 @@ sys.path.append(project_root)
 from src.parse_strategy.parse_strategy_base import ParseStrategyBase
 from src.utils.logger import logger, test_log
 from src.enum.account import Account
+from src.enum.cashflow_direction import CashflowDirection
 from src.enum.category import Category
 from src.enum.column import Column
 from src.enum.currency import Currency
@@ -39,6 +40,12 @@ class WechatColumn(Enum):
         return [column.column_name for column in WechatColumn if not column.is_useful]
 
 
+WECHAT_CASHFLOW_DIRECTION: Dict[str, CashflowDirection] = {
+    "收入": CashflowDirection.INFLOW,
+    "支出": CashflowDirection.OUTFLOW,
+}
+
+
 class WechatParseStrategy(ParseStrategyBase):
     account = Account.WECHAT
     currency = Currency.CNY
@@ -48,23 +55,49 @@ class WechatParseStrategy(ParseStrategyBase):
 
     @classmethod
     def load_data(cls, file_path: Path) -> pd.DataFrame:
-        logger.info(f"Start loading data for file {file_path}")
-
         try:
             columns_to_drop = WechatColumn.get_unuseful_columns()
             data = pd.read_excel(file_path, skiprows=17).drop(columns_to_drop, axis=1)
 
-            logger.info(f"Data (encoding={cls.encoding}) loaded successfull from file {file_path}.")
+            logger.info(f"Data loaded successfull from file `{file_path}`")
             return data
         except UnicodeDecodeError:
-            logger.error(f"Error in decoding the data file ({file_path}): {e}")
+            logger.error(f"Error in decoding the data file `{file_path}`: {e}")
         except Exception as e:
             logger.error(
-                f"Error loading CSV ({file_path}): {e}")
+                f"Error loading Excel file `{file_path}`: {e}")
 
     @classmethod
     def parse_row(cls, row: pd.Series) -> pd.Series:
-        return row  # TODO
+        cashflow_direction = WECHAT_CASHFLOW_DIRECTION[row[WechatColumn.CASHFLOW_DIRECTION.column_name]]
+
+        # Populate output
+        output_row: pd.Series = pd.Series([])
+
+        output_row[Column.DATE.value] = row[WechatColumn.DATE_TIME.column_name]
+
+        # Wechat category does not tell anything, need to refer to the ITEM_DETAIL column
+        output_row[Column.CATEGORY.value] = "TODO: check items details"
+        output_row[Column.CATEGORY_RAW.value] = row[WechatColumn.CATEGORY.column_name]
+
+        output_row[Column.CURRENCY.value] = cls.currency.name
+        output_row[Column.ACCOUNT.value] = cls.account.name
+
+        output_row[Column.CASHFLOW_DIRECTION.value] = cashflow_direction.text
+        output_row[Column.AMOUNT_ABSOLUTE.value] = row[WechatColumn.AMOUNT.column_name]
+        output_row[Column.AMOUNT_NET.value] = cashflow_direction * row[WechatColumn.AMOUNT.column_name]
+
+        output_row[Column.ACCOUNT_BALANCE.value] = "todo"
+        output_row[Column.DETAILS.value] = row[WechatColumn.ITEM_DETAIL.column_name]
+        output_row[Column.REMARK.value] = "--"
+
+        # TODO: handle aggregation; if aggregated, should have recored split to single items,
+        # and the aggregated record should not be recorded in analysis
+        output_row[Column.IS_AGGREGATED.value] = "todo"
+        # TODO: think about how to show the refund item
+        output_row[Column.IS_REFUND.value] = cls.refund_category_keyword in row[WechatColumn.CATEGORY.column_name]
+
+        return output_row
 
     @classmethod
     def fetch_input_file_date(cls, input_file_path: str) -> str:
@@ -72,5 +105,18 @@ class WechatParseStrategy(ParseStrategyBase):
         return str(input_file_path).split('/')[-1][10:29]  # TODO: handle different separator for different OS
 
 
+class WechatRawParseStrategy(WechatParseStrategy):
+    '''Simply convert the raw .xlsx file to .csv'''
+    @classmethod
+    def parse_row(cls, row: pd.Series) -> pd.Series:
+        return row
+
+    @classmethod
+    def get_output_dir_path(cls) -> Path:
+        '''Defines where the output file should be stored.'''
+        return Path(f".output/.{str(cls.account.name).lower()}-raw")
+
+
 if __name__ == "__main__":
+    WechatRawParseStrategy.execute()
     WechatParseStrategy.execute()
