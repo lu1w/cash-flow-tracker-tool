@@ -109,7 +109,7 @@ class AlipayParseStrategy(ParseStrategyBase):
         # Populate output
         output_row: Series = Series([])
 
-        output_row[Column.DATE.value] = row[AlipayColumn.DATE_TIME.column_name]
+        output_row[Column.DATE.value] = pd.to_datetime(row[AlipayColumn.DATE_TIME.column_name])
 
         output_row[Column.CATEGORY.value] = \
             ALIPAY_INFLOW_CATEGORY_MAPPING[row[AlipayColumn.CATEGORY.column_name]](row) if cashflow_direction == CashflowDirection.INFLOW \
@@ -137,7 +137,7 @@ class AlipayParseStrategy(ParseStrategyBase):
         return output_row
 
     @classmethod
-    def fetch_input_file_date(cls, input_file_path: str) -> str:
+    def fetch_input_file_date(cls, input_file_path: str, _start_date, _end_date) -> str:
         # `.data/alipay/支付宝交易明细(20251215-20260315).csv` -> `(20251215-20260315)`
         return str(input_file_path).split('/')[-1][7:26]  # TODO: handle different separator for different OS
 

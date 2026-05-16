@@ -98,8 +98,11 @@ logger = Logger.logger
 
 
 def test_log(*args):
-    print(f"\n>>> {AnsiColorFormatter.blue_light_bg}{AnsiColorFormatter.black}\
-          {'\n'.join([str(arg) for arg in args])}{AnsiColorFormatter.no_style}")
+    allow_test_log = True  # manual toggle for now
+
+    if allow_test_log:
+        print(f"\n>>> {AnsiColorFormatter.blue_light_bg}{AnsiColorFormatter.black}\
+              {'\n'.join([str(arg) for arg in args])}{AnsiColorFormatter.no_style}")
 
 
 if __name__ == "__main__":

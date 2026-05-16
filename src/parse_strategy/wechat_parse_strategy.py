@@ -64,8 +64,7 @@ class WechatParseStrategy(ParseStrategyBase):
         except UnicodeDecodeError:
             logger.error(f"Error in decoding the data file `{file_path}`: {e}")
         except Exception as e:
-            logger.error(
-                f"Error loading Excel file `{file_path}`: {e}")
+            logger.error(f"Error loading Excel file `{file_path}`: {e}")
 
     @classmethod
     def parse_row(cls, row: pd.Series) -> pd.Series:
@@ -74,7 +73,7 @@ class WechatParseStrategy(ParseStrategyBase):
         # Populate output
         output_row: pd.Series = pd.Series([])
 
-        output_row[Column.DATE.value] = row[WechatColumn.DATE_TIME.column_name]
+        output_row[Column.DATE.value] = pd.to_datetime(row[WechatColumn.DATE_TIME.column_name])
 
         # Wechat category does not tell anything, need to refer to the ITEM_DETAIL column
         output_row[Column.CATEGORY.value] = "TODO: check items details"
@@ -100,7 +99,7 @@ class WechatParseStrategy(ParseStrategyBase):
         return output_row
 
     @classmethod
-    def fetch_input_file_date(cls, input_file_path: str) -> str:
+    def fetch_input_file_date(cls, input_file_path: str, _start_date, _end_date) -> str:
         # `.data/wechat/微信支付账单流水文件(20251215-20260315)_20260315105929.xlsx` -> `(20251215-20260315)`
         return str(input_file_path).split('/')[-1][10:29]  # TODO: handle different separator for different OS
 
