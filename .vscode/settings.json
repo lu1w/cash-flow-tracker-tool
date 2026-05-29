@@ -1,0 +1,17 @@
+{
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.autopep8", // autopep8: https://github.com/hhatto/autopep8
+    "editor.formatOnSave": true
+  },
+  "autopep8.args": [
+    // fix supported by autopep8: https://github.com/hhatto/autopep8#features
+    // can configure autopep8 in pyproject.toml - https://pypi.org/project/autopep8/#:~:text=autopep8%20can%20also%20use%20pyproject.toml.%20The%20section%20must%20be%20%5Btool.autopep8%5D%2C%20and%20pyproject.toml%20takes%20precedence%20over%20any%20other%20configuration%20files.
+    "--aggressive",
+    "--aggressive",
+    "--aggressive",
+    "--max-line-length",
+    "120",
+    "--ignore",
+    "E402" // E402: module level import not at top of file
+  ]
+}
