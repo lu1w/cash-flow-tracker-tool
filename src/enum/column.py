@@ -1,6 +1,6 @@
 from enum import Enum
 import pandas as pd
-import datetime
+from typing import List
 
 from .cashflow_direction import CashflowDirection
 

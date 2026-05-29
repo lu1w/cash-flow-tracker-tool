@@ -74,7 +74,8 @@ class HsbcParseStrategy(ParseStrategyBase):
 
         # NOTE: if want to have up to seconds like `2026-03-06 00:00:00` in the output csv, convert the datetime to str.
         # HSBC does not have hh:mm:ss information, so all items will have `00:00:00`.
-        output_row[Column.DATE.value] = pd.to_datetime(row[HsbcColumn.DATE.column_name], format='%d/%m/%Y')
+        date: pd.Timestamp = pd.to_datetime(row[HsbcColumn.DATE.column_name], format='%d/%m/%Y')
+        output_row[Column.DATE.value] = date
 
         output_row[Column.CATEGORY.value] = cls._get_category(row[HsbcColumn.ITEM_DETAIL.column_name])
         output_row[Column.CATEGORY_RAW.value] = "--"
@@ -90,17 +91,13 @@ class HsbcParseStrategy(ParseStrategyBase):
         output_row[Column.DETAILS.value] = row[HsbcColumn.ITEM_DETAIL.column_name]
         output_row[Column.REMARK.value] = "--"
 
-        # TODO: handle aggregation; if aggregated, should have recored split to single items,
+        # TODO: handle aggregation; if aggregated, should have records split to single items,
         # and the aggregated record should not be recorded in analysis
         output_row[Column.IS_AGGREGATED.value] = "--"
         # TODO: think about how to show the refund item
         output_row[Column.IS_REFUND.value] = "--"
 
         return output_row
-
-    @classmethod
-    def fetch_input_file_date(cls, input_file_path: str, start_date, end_date) -> str:
-        return f"({start_date}-{end_date})"
 
 
 if __name__ == "__main__":

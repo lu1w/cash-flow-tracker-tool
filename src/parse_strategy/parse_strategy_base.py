@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 import pandas as pd
 from pandas import DataFrame, Series
+from typing import Dict
 
 # Support import from project root
 project_root = str(Path(__file__).parent.parent.parent)
@@ -17,6 +18,10 @@ class ParseStrategyBase(ABC):
     data_dir_path = Path(".data/REPLACE_ME")
     file_extension = "REPLACE_ME"
 
+    monthly_cashflow: Dict[str, DataFrame] = {}
+
+    should_validate_output_types = True
+
     @classmethod
     @abstractmethod
     def load_data(cls, file_path: Path) -> DataFrame:
@@ -27,17 +32,6 @@ class ParseStrategyBase(ABC):
     @abstractmethod
     def parse_row(cls, row: Series) -> Series:
         '''Core processing logic where the input data is mapped to the output data.'''
-        pass
-
-    @classmethod
-    @abstractmethod
-    def fetch_input_file_date(cls, input_file_path: str, start_date, end_date) -> str:
-        # TODO: store the data (Dataframe) as instance variable, so the child
-        # class can fetch the start/end date, and don't need to pass in two
-        # different logic to get the input file date.
-        # We want to use the input file path when possible, since the cashflow
-        # only reflects the date where cashlow happened.
-        # Or Maybe just manually rename the HSBC files, so we don't rely on cashflow dates.
         pass
 
     @classmethod
@@ -56,33 +50,32 @@ class ParseStrategyBase(ABC):
         return output_dir_path
 
     @classmethod
-    def build_output_file_path(cls, input_file_path: str, start_date: str, end_date: str) -> str:
-        file_date = cls.fetch_input_file_date(input_file_path, start_date, end_date)
-
-        # .output/.wechat/WECHAT(20251215-20260315).csv
-        return cls.ensure_output_dir_path() / f"{cls.account.name}{file_date}.csv"
+    def build_output_file_path(cls, date_key: str) -> str:
+        # .output/.wechat/WECHAT(202602).csv
+        return cls.ensure_output_dir_path() / f"{cls.account.name}({date_key}).csv"
 
     @classmethod
     def process_file(cls, file_path: Path) -> None:
         try:
+            # Load data
             logger.info(f"Start loading data for file `{file_path}`")
             data: DataFrame = cls.load_data(file_path)
 
+            # Parse data
             logger.info(f"Data loaded, start parsing rows for file `{file_path}`")
             parsed_data: DataFrame = data.apply(cls.parse_row, axis=1, result_type='reduce')
-            Column.verify_columns_data_type(parsed_data)
+            if not cls.should_validate_output_types:
+                Column.verify_columns_data_type(parsed_data)
 
-            # Get starting date and end date
-            start_date: pd.Timestamp = parsed_data.loc[len(parsed_data) - 1].loc[Column.DATE.value]
-            end_date: pd.Timestamp = parsed_data.loc[0].loc[Column.DATE.value]
+            # Group data based on the year and month
+            cls.monthly_cashflow = {f"{year:4}-{month:02}": row
+                                    for (year, month), row
+                                    in parsed_data.groupby([parsed_data['Date'].dt.year, parsed_data['Date'].dt.month])}
 
+            # Writ data to monthly file
             logger.info(f"Rows parsed, start writing output for input file `{file_path}`")
-            parsed_data.to_csv(
-                cls.build_output_file_path(file_path, start_date.strftime("%Y%m%d"), end_date.strftime("%Y%m%d")),
-                index=False,
-                encoding="utf-8",
-                mode="w"
-            )
+            for year_month, df in cls.monthly_cashflow.items():
+                df.to_csv(cls.build_output_file_path(year_month), index=False, encoding="utf-8", mode="w")
 
             logger.info(f"Successfully processed file `{file_path}`")
         except Exception as e:
