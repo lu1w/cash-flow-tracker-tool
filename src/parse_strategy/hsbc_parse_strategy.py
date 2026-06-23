@@ -1,10 +1,11 @@
 import sys
+import traceback
 from enum import Enum
 from pathlib import Path
 
 import pandas as pd
 from pandas import DataFrame, Series
-from typing import List, Dict, Callable
+from typing import List, Dict, Callable, override
 
 
 # Support import from project root
@@ -52,6 +53,7 @@ class HsbcParseStrategy(ParseStrategyBase):
             return CategoryInflow.CASH_REBATE.name
         return "TODO"
 
+    @override
     @classmethod
     def load_data(cls, file_path: Path) -> DataFrame:
         try:
@@ -60,9 +62,8 @@ class HsbcParseStrategy(ParseStrategyBase):
             return data
         except UnicodeDecodeError:
             logger.error(f"Error in decoding the data file `{file_path}`: {e}")
-        except Exception as e:
-            logger.error(f"Error loading CSV file `{file_path}`: {e}")
 
+    @override
     @classmethod
     def parse_row(cls, row: Series) -> Series:
         cashflow_direction = CashflowDirection.OUTFLOW if row[HsbcColumn.NET_AMOUNT.column_name][0] == "-" \
@@ -87,18 +88,16 @@ class HsbcParseStrategy(ParseStrategyBase):
         output_row[Column.AMOUNT_ABSOLUTE.value] = abs(net_amount)
         output_row[Column.AMOUNT_NET.value] = net_amount
 
-        output_row[Column.ACCOUNT_BALANCE.value] = "todo"
+        output_row[Column.ACCOUNT_BALANCE.value] = float(row[HsbcColumn.BALANCE.column_name].strip().replace(",", ""))
         output_row[Column.DETAILS.value] = row[HsbcColumn.ITEM_DETAIL.column_name]
-        output_row[Column.REMARK.value] = "--"
+        output_row[Column.REMARK.value] = ""  # manual edit
 
-        # TODO: handle aggregation; if aggregated, should have records split to single items,
-        # and the aggregated record should not be recorded in analysis
-        output_row[Column.IS_AGGREGATED.value] = "--"
+        output_row[Column.IS_AGGREGATED.value] = False
         # TODO: think about how to show the refund item
-        output_row[Column.IS_REFUND.value] = "--"
+        output_row[Column.IS_REFUNDED.value] = "--"
 
         return output_row
 
 
 if __name__ == "__main__":
-    HsbcParseStrategy.execute()
+    test_log("Run from main.py to see the result")

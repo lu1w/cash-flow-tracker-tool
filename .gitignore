@@ -218,3 +218,4 @@ logs/
 # Temporary ignore, should be updated for clarity
 sample-data/
 *.todo.*
+*categorizer*

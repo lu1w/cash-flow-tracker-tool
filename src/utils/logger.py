@@ -88,11 +88,6 @@ class Logger:
         file_handler.setFormatter(DefaultFormatter())
         logger.addHandler(file_handler)
 
-    logger.debug("Testing Debug Message")
-    logger.info("Testing Info Message")
-    logger.warning("Testing Warning Message")
-    logger.error("Testing Error Message")
-
 
 logger = Logger.logger
 
@@ -106,4 +101,9 @@ def test_log(*args):
 
 
 if __name__ == "__main__":
+    logger.debug("Testing Debug Message")
+    logger.info("Testing Info Message")
+    logger.warning("Testing Warning Message")
+    logger.error("Testing Error Message")
+
     test_log("test", "test_log()")

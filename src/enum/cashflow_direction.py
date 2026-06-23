@@ -1,5 +1,6 @@
 
 from enum import Enum
+from pandas import Series
 
 
 class CashflowDirection(Enum):
@@ -20,6 +21,11 @@ class CashflowDirection(Enum):
     # Handles: other * self (e.g., 3 * v)
     def __rmul__(self, scalar):
         return self.__mul__(scalar)
+
+    @classmethod
+    def get_unknown(cls, row: Series):
+        print(f"Unknown cashflow direction for row:\n{row}\n")
+        return cls.UNKNOWN
 
 
 if __name__ == "__main__":

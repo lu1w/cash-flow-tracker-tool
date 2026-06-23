@@ -19,7 +19,7 @@ class Column(Enum):
     DETAILS = "Details"
     REMARK = "Remark"
     IS_AGGREGATED = "Is Aggregated"  # Means user need to manually
-    IS_REFUND = "Is Refund"
+    IS_REFUNDED = "Refunded"
 
     # def __init__(self, name):
     #     self.name = name

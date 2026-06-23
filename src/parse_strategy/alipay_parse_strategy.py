@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pandas as pd
 from pandas import DataFrame, Series
-from typing import List, Dict, Callable
+from typing import List, Dict, Callable, override
 
 
 # Support import from project root
@@ -13,11 +13,11 @@ project_root = str(Path(__file__).parent.parent.parent)
 sys.path.append(project_root)
 from src.enum.column import Column
 from src.enum.currency import Currency
-from src.enum.category import CategoryInflow, CategoryOutflow
+from src.enum.category import Category, CategoryInflow, CategoryOutflow
 from src.enum.account import Account
 from src.enum.cashflow_direction import CashflowDirection
 from src.parse_strategy.parse_strategy_base import ParseStrategyBase
-from src.utils.logger import logger
+from src.utils.logger import logger, test_log
 
 
 class AlipayColumn(Enum):
@@ -57,12 +57,18 @@ ALIPAY_INFLOW_CATEGORY_MAPPING: Dict[str, Callable[[Series], CategoryInflow]] = 
 # TODO: implementation of the non-deterministic mapping functions
 ALIPAY_OUTFLOW_CATEGORY_MAPPING: Dict[str, Callable[[Series | None], CategoryOutflow]] = {
     "交通出行": lambda _: CategoryOutflow.TRANSPORTATION.name,
-    "日用百货": lambda _: CategoryOutflow.DAILY_NECESSITY.name,
-    "家居家装": lambda _: CategoryOutflow.DAILY_NECESSITY.name,
+    "日用百货": lambda _: CategoryOutflow.LIVING.name,
+    "家居家装": lambda _: CategoryOutflow.LIVING.name,
+    "生活服务": lambda _: CategoryOutflow.LIVING.name,
+    "餐饮美食": lambda _: CategoryOutflow.FOOD.name,
     "酒店旅游": lambda _: CategoryOutflow.HOUSING.name,
+    "教育培训": lambda _: CategoryOutflow.EDUCATION.name,
     "运动户外": lambda _: CategoryOutflow.FITNESS.name,
     "服饰装扮": lambda _: CategoryOutflow.CLOTHING.name,
     "美容美发": lambda _: CategoryOutflow.BEAUTY.name,
+    "数码电器": lambda _: CategoryOutflow.ELECTRONICS.name,
+    "充值缴费": lambda row: CategoryOutflow.TELECOMMUNICATION.name if row[AlipayColumn.COUNTERPARTY.column_name] == "中国移动" else CategoryOutflow.UNKNOWN.name,
+    "住房物业": lambda _: CategoryOutflow.UNKNOWN.name,
     "医疗健康": lambda _: CategoryOutflow.UNKNOWN.name,
     "文化休闲": lambda _: CategoryOutflow.UNKNOWN.name,
     "商业服务": lambda _: CategoryOutflow.UNKNOWN.name,
@@ -76,35 +82,53 @@ class AlipayParseStrategy(ParseStrategyBase):
     file_extension = "csv"
     encoding = 'gbk'
 
-    refund_category = "退款"
+    # refund_category = "退款"
 
+    num_skip_rows = 23
+
+    @override
     @classmethod
     def load_data(cls, file_path: Path) -> DataFrame:
+        columns_to_drop = AlipayColumn.get_unuseful_columns()
         try:
-            columns_to_drop = AlipayColumn.get_unuseful_columns()
-            try:
-                data = pd.read_csv(
-                    # GBK is a more comprehensive superset of the GB2312 standard,
-                    # and it is often more compatible with a wider range of simplified Chinese characters
-                    # you might encounter in modern files. If one encoding doesn't work, try the other.
-                    file_path, skiprows=24, encoding=cls.encoding
-                ).drop(columns_to_drop, axis=1)
-            except UnicodeDecodeError:
-                # If not gbk, use utf-8
-                cls.encoding = "utf-8"
-                data = pd.read_csv(file_path, skiprows=24, encoding=cls.encoding).drop(columns_to_drop, axis=1)
+            data = pd.read_csv(
+                # GBK is a more comprehensive superset of the GB2312 standard,
+                # and it is often more compatible with a wider range of simplified Chinese characters
+                # you might encounter in modern files. If one encoding doesn't work, try the other.
+                file_path, skiprows=cls.num_skip_rows, encoding=cls.encoding
+            ).drop(columns_to_drop, axis=1)
+        except UnicodeDecodeError:
+            # If not gbk, use utf-8
+            cls.encoding = "utf-8"
+            data = pd.read_csv(
+                file_path,
+                skiprows=cls.num_skip_rows,
+                encoding=cls.encoding
+            ).drop(columns_to_drop, axis=1)
 
-            logger.info(f"Data (encoding={cls.encoding}) loaded successfull from file {file_path}")
+        logger.info(f"Data (encoding={cls.encoding}) loaded successfull from file {file_path}")
 
-            return data
+        return data
 
-        except Exception as e:
-            logger.error(
-                f"Error loading CSV ({file_path}): {e}")
-
+    @override
     @classmethod
     def parse_row(cls, row: Series) -> Series:
         cashflow_direction = ALIPAY_CASHFLOW_DIRECTION[row[AlipayColumn.CASHFLOW_DIRECTION.column_name]]
+
+        def derive_category() -> Category:
+            category_column_name = AlipayColumn.CATEGORY.column_name
+
+            def derive_to_unknown(_):
+                logger.warning(f"Unknown Alipay category: {row}")
+                return CategoryOutflow.UNKNOWN.name
+
+            match cashflow_direction:
+                case CashflowDirection.INFLOW:
+                    return ALIPAY_INFLOW_CATEGORY_MAPPING.get(row[category_column_name], derive_to_unknown)(row)
+                case CashflowDirection.OUTFLOW:
+                    return ALIPAY_OUTFLOW_CATEGORY_MAPPING.get(row[category_column_name], derive_to_unknown)(row)
+                case _:
+                    return row[category_column_name]
 
         # Populate output
         output_row: Series = Series([])
@@ -112,10 +136,7 @@ class AlipayParseStrategy(ParseStrategyBase):
         date: pd.Timestamp = pd.to_datetime(row[AlipayColumn.DATE_TIME.column_name])
         output_row[Column.DATE.value] = date
 
-        output_row[Column.CATEGORY.value] = \
-            ALIPAY_INFLOW_CATEGORY_MAPPING[row[AlipayColumn.CATEGORY.column_name]](row) if cashflow_direction == CashflowDirection.INFLOW \
-            else ALIPAY_OUTFLOW_CATEGORY_MAPPING[row[AlipayColumn.CATEGORY.column_name]](row) if cashflow_direction == CashflowDirection.OUTFLOW \
-            else row[AlipayColumn.CATEGORY.column_name]
+        output_row[Column.CATEGORY.value] = derive_category()
         output_row[Column.CATEGORY_RAW.value] = row[AlipayColumn.CATEGORY.column_name]
 
         output_row[Column.CURRENCY.value] = cls.currency.name
@@ -127,13 +148,14 @@ class AlipayParseStrategy(ParseStrategyBase):
 
         output_row[Column.ACCOUNT_BALANCE.value] = "todo"
         output_row[Column.DETAILS.value] = row[AlipayColumn.ITEM_DETAIL.column_name]
-        output_row[Column.REMARK.value] = "--"
+        output_row[Column.REMARK.value] = ""  # manual edit
 
         # TODO: handle aggregation; if aggregated, should have recored split to single items,
         # and the aggregated record should not be recorded in analysis
         output_row[Column.IS_AGGREGATED.value] = "todo"
         # TODO: think about how to show the refund item
-        output_row[Column.IS_REFUND.value] = row[AlipayColumn.CATEGORY.column_name] == cls.refund_category
+        # should not be row[AlipayColumn.CATEGORY.column_name] == cls.refund_category
+        output_row[Column.IS_REFUNDED.value] = "todo"
 
         return output_row
 
@@ -142,4 +164,4 @@ if __name__ == "__main__":
     # from pprint import pprint
     # pprint(AlipayParseStrategy.__dict__)
 
-    AlipayParseStrategy.execute()
+    test_log("Run from main.py to see the result")

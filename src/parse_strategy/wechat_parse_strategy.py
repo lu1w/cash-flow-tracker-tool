@@ -3,7 +3,7 @@ import sys
 import pandas as pd
 from enum import Enum
 from pathlib import Path
-from typing import List, Dict
+from typing import List, Dict, override
 
 # Support import from project root
 project_root = str(Path(__file__).parent.parent.parent)
@@ -12,7 +12,7 @@ from src.parse_strategy.parse_strategy_base import ParseStrategyBase
 from src.utils.logger import logger, test_log
 from src.enum.account import Account
 from src.enum.cashflow_direction import CashflowDirection
-from src.enum.category import Category
+from src.enum.category import Category, CategoryInflow, CategoryOutflow
 from src.enum.column import Column
 from src.enum.currency import Currency
 
@@ -40,9 +40,14 @@ class WechatColumn(Enum):
         return [column.column_name for column in WechatColumn if not column.is_useful]
 
 
-WECHAT_CASHFLOW_DIRECTION: Dict[str, CashflowDirection] = {
-    "收入": CashflowDirection.INFLOW,
-    "支出": CashflowDirection.OUTFLOW,
+class WechatCashflowDirection(Enum):
+    INFLOW = "收入"
+    OUTFLOW = "支出"
+
+
+WECHAT_CASHFLOW_DIRECTION_MAPPING: Dict[str, CashflowDirection] = {
+    WechatCashflowDirection.INFLOW.value: CashflowDirection.INFLOW,
+    WechatCashflowDirection.OUTFLOW.value: CashflowDirection.OUTFLOW,
 }
 
 
@@ -53,6 +58,7 @@ class WechatParseStrategy(ParseStrategyBase):
 
     refund_category_keyword = "退款"
 
+    @override
     @classmethod
     def load_data(cls, file_path: Path) -> pd.DataFrame:
         try:
@@ -61,14 +67,32 @@ class WechatParseStrategy(ParseStrategyBase):
 
             logger.info(f"Data loaded successfull from file `{file_path}`")
             return data
-        except UnicodeDecodeError:
+        except UnicodeDecodeError as e:
             logger.error(f"Error in decoding the data file `{file_path}`: {e}")
-        except Exception as e:
-            logger.error(f"Error loading Excel file `{file_path}`: {e}")
 
+    @override
     @classmethod
     def parse_row(cls, row: pd.Series) -> pd.Series:
-        cashflow_direction = WECHAT_CASHFLOW_DIRECTION[row[WechatColumn.CASHFLOW_DIRECTION.column_name]]
+        cashflow_direction = \
+            WECHAT_CASHFLOW_DIRECTION_MAPPING.get(row[WechatColumn.CASHFLOW_DIRECTION.column_name]) \
+            or CashflowDirection.get_unknown(row)
+
+        def derive_category() -> Category:
+            match row[WechatColumn.CASHFLOW_DIRECTION.column_name]:
+                case WechatCashflowDirection.INFLOW.value:
+                    pass
+                case WechatCashflowDirection.OUTFLOW.value:
+                    if (
+                        "滴滴出行" in row[WechatColumn.COUNTERPARTY.column_name]
+                    ):
+                        return CategoryOutflow.TRANSPORTATION
+
+                    if (
+                        "普拉提瑜伽工作室" in row[WechatColumn.COUNTERPARTY.column_name]
+                    ):
+                        return CategoryOutflow.FITNESS
+                case _:
+                    raise Exception(f"Unknown cashflow direction: {row}")
 
         # Populate output
         output_row: pd.Series = pd.Series([])
@@ -77,6 +101,7 @@ class WechatParseStrategy(ParseStrategyBase):
         output_row[Column.DATE.value] = date
 
         # Wechat category does not tell anything, need to refer to the ITEM_DETAIL column
+        # NOTE: should be REFUND if cls.refund_category_keyword in row[WechatColumn.CATEGORY.column_name]
         output_row[Column.CATEGORY.value] = "TODO: check items details"
         output_row[Column.CATEGORY_RAW.value] = row[WechatColumn.CATEGORY.column_name]
 
@@ -95,18 +120,21 @@ class WechatParseStrategy(ParseStrategyBase):
         # and the aggregated record should not be recorded in analysis
         output_row[Column.IS_AGGREGATED.value] = "todo"
         # TODO: think about how to show the refund item
-        output_row[Column.IS_REFUND.value] = cls.refund_category_keyword in row[WechatColumn.CATEGORY.column_name]
+        output_row[Column.IS_REFUNDED.value] = "todo"
 
         return output_row
 
 
 class WechatRawParseStrategy(WechatParseStrategy):
-    should_validate_output_types = False
+    require_data_type_validation = False
 
     @classmethod
     def parse_row(cls, row: pd.Series) -> pd.Series:
+
+        # need to have date column for grouping into monthly file
         date: pd.Timestamp = pd.to_datetime(row[WechatColumn.DATE_TIME.column_name])
-        row[Column.FILE_DATE_KEY.value] = f"{date.year:04}{date.month:02}"
+        row[Column.DATE.value] = date
+
         return row
 
     @classmethod
@@ -116,5 +144,4 @@ class WechatRawParseStrategy(WechatParseStrategy):
 
 
 if __name__ == "__main__":
-    WechatRawParseStrategy.execute()
-    WechatParseStrategy.execute()
+    test_log("Run from main.py to see the result")
