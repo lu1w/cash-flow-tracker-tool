@@ -60,8 +60,8 @@ class HsbcParseStrategy(ParseStrategyBase):
             columns_to_drop = HsbcColumn.get_unuseful_columns()
             data = pd.read_csv(file_path, encoding=cls.encoding).drop(columns_to_drop, axis=1)
             return data
-        except UnicodeDecodeError:
-            logger.error(f"Error in decoding the data file `{file_path}`: {e}")
+        except UnicodeDecodeError as e:
+            logger.exception(f"Error in decoding the data file `{file_path}`: {e}")
 
     @override
     @classmethod
@@ -89,7 +89,7 @@ class HsbcParseStrategy(ParseStrategyBase):
         output_row[Column.AMOUNT_NET.value] = net_amount
 
         output_row[Column.ACCOUNT_BALANCE.value] = float(row[HsbcColumn.BALANCE.column_name].strip().replace(",", ""))
-        output_row[Column.DETAILS.value] = row[HsbcColumn.ITEM_DETAIL.column_name]
+        output_row[Column.DESCRIPTION.value] = row[HsbcColumn.ITEM_DETAIL.column_name]
         output_row[Column.REMARK.value] = ""  # manual edit
 
         output_row[Column.IS_AGGREGATED.value] = False

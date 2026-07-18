@@ -18,7 +18,7 @@ from src.enum.currency import Currency
 
 
 class WechatColumn(Enum):
-    '''Columns in a WeChat report file.'''
+    """Columns in a WeChat report file."""
     # 交易时间,交易类型,交易对方,商品,收/支,金额(元),支付方式,当前状态,交易单号,商户单号,备注
     DATE_TIME = ("交易时间", True)
     CATEGORY = ("交易类型", True)
@@ -64,11 +64,9 @@ class WechatParseStrategy(ParseStrategyBase):
         try:
             columns_to_drop = WechatColumn.get_unuseful_columns()
             data = pd.read_excel(file_path, skiprows=17).drop(columns_to_drop, axis=1)
-
-            logger.info(f"Data loaded successfull from file `{file_path}`")
             return data
         except UnicodeDecodeError as e:
-            logger.error(f"Error in decoding the data file `{file_path}`: {e}")
+            logger.exception(f"Error in decoding the data file `{file_path}`: {e}")
 
     @override
     @classmethod
@@ -102,7 +100,7 @@ class WechatParseStrategy(ParseStrategyBase):
 
         # Wechat category does not tell anything, need to refer to the ITEM_DETAIL column
         # NOTE: should be REFUND if cls.refund_category_keyword in row[WechatColumn.CATEGORY.column_name]
-        output_row[Column.CATEGORY.value] = "TODO: check items details"
+        output_row[Column.CATEGORY.value] = "TODO: check items description"
         output_row[Column.CATEGORY_RAW.value] = row[WechatColumn.CATEGORY.column_name]
 
         output_row[Column.CURRENCY.value] = cls.currency.name
@@ -113,7 +111,7 @@ class WechatParseStrategy(ParseStrategyBase):
         output_row[Column.AMOUNT_NET.value] = cashflow_direction * row[WechatColumn.AMOUNT.column_name]
 
         output_row[Column.ACCOUNT_BALANCE.value] = "todo"
-        output_row[Column.DETAILS.value] = row[WechatColumn.ITEM_DETAIL.column_name]
+        output_row[Column.DESCRIPTION.value] = row[WechatColumn.ITEM_DETAIL.column_name]
         output_row[Column.REMARK.value] = "--"
 
         # TODO: handle aggregation; if aggregated, should have recored split to single items,
@@ -138,9 +136,9 @@ class WechatRawParseStrategy(WechatParseStrategy):
         return row
 
     @classmethod
-    def get_output_dir_path(cls) -> Path:
-        '''Defines where the output file should be stored.'''
-        return Path(f".output/.{str(cls.account.name).lower()}-raw")
+    def get_parsed_data_dir_path(cls) -> Path:
+        from src.config.config import FileConfig
+        return Path(f"{FileConfig.INPUT_DATA_DIR}/.{str(cls.account.name).lower()}-csv")
 
 
 if __name__ == "__main__":

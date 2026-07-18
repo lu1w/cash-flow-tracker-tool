@@ -9,10 +9,11 @@ from typing import Dict
 # Support import from project root
 project_root = str(Path(__file__).parent.parent.parent)
 sys.path.append(project_root)
-from src.utils.logger import logger, test_log
+from src.config.config import FileConfig
 from src.enum.account import Account
 from src.enum.column import Column
 from src.enum.currency import Currency
+from src.utils.logger import logger, test_log
 
 
 class ParseStrategyBase(ABC):
@@ -27,34 +28,34 @@ class ParseStrategyBase(ABC):
     @classmethod
     @abstractmethod
     def load_data(cls, file_path: Path) -> DataFrame:
-        '''Read data from input file.'''
+        """Read data from input file."""
         pass
 
     @classmethod
     @abstractmethod
     def parse_row(cls, row: Series) -> Series:
-        '''Core processing logic where the input data is mapped to the output data.'''
+        """Core processing logic where the input data is mapped to the output data."""
         pass
 
     @classmethod
-    def get_data_dir_path(cls) -> Path:
-        return Path(f".data/{str(cls.account.name).lower()}")
+    def get_input_data_dir_path(cls) -> Path:
+        return Path(f"{FileConfig.INPUT_DATA_DIR}/{str(cls.account.name).lower()}")
 
     @classmethod
-    def get_output_dir_path(cls) -> Path:
-        '''Defines where the output file should be stored.'''
-        return Path(f".output/.{str(cls.account.name).lower()}")
+    def get_parsed_data_dir_path(cls) -> Path:
+        """Defines where the standardized file should be stored."""
+        return Path(f"{FileConfig.STANDARDIZED_DATA_DIR}/{str(cls.account.name).lower()}")
 
     @classmethod
-    def ensure_output_dir_path(cls) -> Path:
-        output_dir_path = cls.get_output_dir_path()
-        output_dir_path.mkdir(parents=True, exist_ok=True)
-        return output_dir_path
+    def ensure_standardized_data_dir_path(cls) -> Path:
+        standardized_dir_path = cls.get_parsed_data_dir_path()
+        standardized_dir_path.mkdir(parents=True, exist_ok=True)
+        return standardized_dir_path
 
     @classmethod
     def build_output_file_path(cls, date_key: str) -> str:
-        # .output/.wechat/WECHAT(202602).csv
-        return cls.ensure_output_dir_path() / f"{cls.account.name}({date_key}).csv"
+        # .data/standardized/.wechat/WECHAT(202602).csv
+        return cls.ensure_standardized_data_dir_path() / f"{cls.account.name}({date_key}).csv"
 
 
 if __name__ == "__main__":

@@ -211,9 +211,11 @@ logs/
 
 # Private files
 *.priv.*
-.priv/
+.priv*/
 .data/
+.parsed_data/
 .output/
+.result/
 
 # Temporary ignore, should be updated for clarity
 sample-data/

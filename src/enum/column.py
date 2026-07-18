@@ -1,28 +1,45 @@
+import sys
+from pathlib import Path
 from enum import Enum
 import pandas as pd
 from typing import List
 
-from .cashflow_direction import CashflowDirection
+project_root = str(Path(__file__).parent.parent.parent)
+sys.path.append(project_root)
+from src.enum.cashflow_direction import CashflowDirection
+
+# TODO: utilize pydantic library to create a typed model for each row, instead of using enum to model the columns
 
 
 class Column(Enum):
-    '''Output columns'''
+    """Output columns"""
     DATE = "Date"
+
+    # Category columns
     CATEGORY = "Category"
-    CATEGORY_RAW = "RAW Category"  # Row category from the report files
+    CATEGORY_CONFIDENCE = "Category Confidence"
+    CATEGORY_RESOLVER = "Category Resolver"
+    CATEGORY_RAW = "Raw Category"  # Category from the report files without changes
+
+    # Monetary columns
     CURRENCY = "Currency"
     CASHFLOW_DIRECTION = f"{CashflowDirection.INFLOW.text}(+)/{CashflowDirection.OUTFLOW.text}(-)"
     AMOUNT_ABSOLUTE = "Absolute Amount"
     AMOUNT_NET = "Net Amount"
     ACCOUNT = "Account"
     ACCOUNT_BALANCE = "Account Balance"
-    DETAILS = "Details"
-    REMARK = "Remark"
-    IS_AGGREGATED = "Is Aggregated"  # Means user need to manually
-    IS_REFUNDED = "Refunded"
 
-    # def __init__(self, name):
-    #     self.name = name
+    # Notes/text columns
+    REMARK = "Remark"  # User notes for oneself
+    DESCRIPTION = "Description"  # Used as the context and description of the entry for LLM
+
+    # Means user need to manually split the record into multiple records, and
+    # the aggregated record should not be used in analysis
+    IS_AGGREGATED = "Is Aggregated"
+
+    # Refunded records that indicate the original record has been refunded,
+    # and the refunded record should be treated as no money spent, and not be used in analysis
+    IS_REFUNDED = "Refunded"
 
     @staticmethod
     def verify_columns_data_type(df: pd.DataFrame) -> None:
@@ -32,6 +49,7 @@ class Column(Enum):
 
 if __name__ == "__main__":
     assert Column.DATE.name == "DATE"
-    assert Column.AMOUNT.value == "Amount"
+    assert Column.ACCOUNT.value == "Account"
+    assert str(Column.ACCOUNT) == "Column.ACCOUNT"
 
     print(Column._member_names_)

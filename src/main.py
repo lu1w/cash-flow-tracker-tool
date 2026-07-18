@@ -2,9 +2,11 @@
 import sys
 from pathlib import Path
 
-# Support import from project root
-project_root = str(Path(__file__).parent.parent)
-sys.path.append(project_root)
+if __name__ == "__main__":
+    # Support import from project root
+    project_root = str(Path(__file__).parent.parent)
+    sys.path.append(project_root)
+
 from src.parser.parser import Parser
 from src.parse_strategy.alipay_parse_strategy import AlipayParseStrategy
 from src.parse_strategy.hsbc_parse_strategy import HsbcParseStrategy

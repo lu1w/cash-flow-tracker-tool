@@ -147,7 +147,7 @@ class AlipayParseStrategy(ParseStrategyBase):
         output_row[Column.AMOUNT_NET.value] = cashflow_direction * row[AlipayColumn.AMOUNT.column_name]
 
         output_row[Column.ACCOUNT_BALANCE.value] = "todo"
-        output_row[Column.DETAILS.value] = row[AlipayColumn.ITEM_DETAIL.column_name]
+        output_row[Column.DESCRIPTION.value] = row[AlipayColumn.ITEM_DETAIL.column_name]
         output_row[Column.REMARK.value] = ""  # manual edit
 
         # TODO: handle aggregation; if aggregated, should have recored split to single items,

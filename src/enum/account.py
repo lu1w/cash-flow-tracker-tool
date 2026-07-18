@@ -24,7 +24,7 @@ class Account(Enum):
     CASH_USD = (CASH, Currency.USD)
 
     def __init__(self, account_type: str, currency: Currency):
-        '''Setting attributes for the enum'''
+        """Setting attributes for the enum"""
         self.account_type = account_type
         self.currency = currency
 
