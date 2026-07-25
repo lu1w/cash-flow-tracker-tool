@@ -7,6 +7,7 @@ if __name__ == "__main__":
     project_root = str(Path(__file__).parent.parent)
     sys.path.append(project_root)
 
+from src.categorizer.categorizer import Categorizer
 from src.parser.parser import Parser
 from src.parse_strategy.alipay_parse_strategy import AlipayParseStrategy
 from src.parse_strategy.hsbc_parse_strategy import HsbcParseStrategy
@@ -17,7 +18,7 @@ from src.utils.logger import logger
 def main():
     print("Welcome to cash flow tracker tool!")
 
-    # 1. parse files to intended output
+    # 1. parse files to standardized format
     for strategy in [AlipayParseStrategy, WechatParseStrategy, HsbcParseStrategy,
                      WechatRawParseStrategy]:
         parser = Parser(strategy)

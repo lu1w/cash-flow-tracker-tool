@@ -1,6 +1,6 @@
 import sys
 from pathlib import Path
-from enum import Enum
+from enum import StrEnum
 import pandas as pd
 from typing import List
 
@@ -11,7 +11,8 @@ from src.enum.cashflow_direction import CashflowDirection
 # TODO: utilize pydantic library to create a typed model for each row, instead of using enum to model the columns
 
 
-class Column(Enum):
+# NOTE: need to inherit from `StrEnum` so that Column.X can resolve to Column.X.value directly
+class Column(StrEnum):
     """Output columns"""
     DATE = "Date"
 
@@ -48,8 +49,10 @@ class Column(Enum):
 
 
 if __name__ == "__main__":
+    print()
     assert Column.DATE.name == "DATE"
     assert Column.ACCOUNT.value == "Account"
-    assert str(Column.ACCOUNT) == "Column.ACCOUNT"
+    assert str(Column.ACCOUNT) == "Account"
+    assert Column.CATEGORY_RESOLVER == "Category Resolver"
 
     print(Column._member_names_)
