@@ -13,7 +13,7 @@ from src.config.config import FileConfig
 from src.enum.account import Account
 from src.enum.column import Column
 from src.enum.currency import Currency
-from src.utils.logger import logger, test_log
+from src.utils.logger import logger, debug_log
 
 
 class ParseStrategyBase(ABC):

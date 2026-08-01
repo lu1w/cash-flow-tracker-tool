@@ -16,8 +16,7 @@ class FileConfig:
     OUTPUT_DATA_DIR = os.getenv("OUTPUT_DATA_DIR", ".data/output")
     OUTPUT_SNAPSHOTS_DIR = os.getenv("OUTPUT_SNAPSHOTS_DIR", ".data/output-snapshots")
 
-    # or maybe `.data/reference` if adding manually corrected version to the /reference directory
-    REFERENCE_DATA_DIR = os.getenv("REFERENCE_DATA_DIR", ".data/output")
+    REFERENCE_DATA_DIR = os.getenv("REFERENCE_DATA_DIR", ".data/reference")
 
 
 if __name__ == "__main__":

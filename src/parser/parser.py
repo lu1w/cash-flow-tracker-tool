@@ -10,7 +10,7 @@ from typing import Dict
 project_root = str(Path(__file__).parent.parent.parent)
 sys.path.append(project_root)
 from src.parse_strategy.parse_strategy_base import ParseStrategyBase
-from src.utils.logger import logger, test_log
+from src.utils.logger import logger, debug_log
 from src.enum.column import Column
 
 

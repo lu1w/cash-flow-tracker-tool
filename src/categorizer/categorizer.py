@@ -12,7 +12,7 @@ sys.path.append(project_root)
 from src.enum.category import Category, CategoryInflow, CategoryOutflow
 from src.enum.column import Column
 from src.config.config import FileConfig
-from src.utils.logger import logger, test_log
+from src.utils.logger import logger, debug_log
 
 
 EMBEDDING_THRESHOLD: Final = 0.50  # similarity threshold for assigning category based on embedding similarity
@@ -39,8 +39,8 @@ class Categorizer():
 
     def _build_reference_index(self) -> tuple[pd.DataFrame, np.ndarray]:
         """
-        Load a labeled reference set and encode it.
-        reference.csv must have columns: Details, Category
+        Load a labeled reference set in a CSV and encode it.
+        The reference CSV must have columns: Description, Category
         """
         ref_data_dir = FileConfig.REFERENCE_DATA_DIR
         logger.info(f"Building reference index from files in {ref_data_dir}")
@@ -80,7 +80,7 @@ class Categorizer():
             show_progress_bar=False,
         )
 
-        # Computer the cosine similarity between each uncategorized entry and
+        # Compute the cosine similarity between each uncategorized entry and
         # all reference entries to resolve the category.
         # Given:
         # - uncategorized_description_embeddings has n elements,
@@ -103,25 +103,29 @@ class Categorizer():
         categorized = df[Column.CATEGORY.value].notna().sum()
         total = len(df)
         logger.info(f"Categorized before embedding: {total - uncategorized_mask.sum()}/{total}\n" +
-                    f"Categorized after embeddings: {(df[Column.CATEGORY.value] != "").sum()}/{total}")
+                    f"Categorized after embeddings: {(df[Column.CATEGORY.value] != '').sum()}/{total}")
 
         return df
 
     def get_output_csv_file_path(self, input_file_path: Path) -> Path:
-        categorized_data_dir_path = Path(FileConfig.CATEGORIZED_DATA_DIR)
-        categorized_data_dir_path.mkdir(parents=True, exist_ok=True)
-        return Path(f"{categorized_data_dir_path}/{input_file_path.name}.csv")
+        account_dir = input_file_path.parent.name
+        dir_path = Path(FileConfig.CATEGORIZED_DATA_DIR) / account_dir
+        dir_path.mkdir(parents=True, exist_ok=True)
+        return Path(f"{dir_path}/{input_file_path.stem}.csv")
 
-    def categorize(self, file_path: Path) -> pd.DataFrame:
-        """Categorize a transaction based on its details.
-        This is only required when parse_strategy cannot determine the category."""
+    def categorize(self, file_path: Path | str) -> pd.DataFrame:
+        """
+        Reads reference data, and matches the description of uncategorized entries to the
+        reference data based on embedding similarity to categorize the uncategorized entries.
 
+        :param file_path: Path to the standardized data CSV file to be categorized. E.g. .data/standardized/.alipay/ALIPAY(202602).csv
+        """
         if isinstance(file_path, str):
             file_path: Path = Path(file_path)
 
         if isinstance(file_path, Path):
             # NOTE: We need keep_default_na to false, since nan is considered a float,
-            # leading to error with assigning str category
+            # leading to error with assigning str typed category
             df: pd.DataFrame = pd.read_csv(file_path, keep_default_na=False)
         else:
             raise TypeError(f"Input must be one of these types: str, Path. Actual: {type(file_path)}")

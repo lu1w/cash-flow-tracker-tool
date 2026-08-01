@@ -92,10 +92,10 @@ class Logger:
 logger = Logger.logger
 
 
-def test_log(*args):
-    allow_test_log = True  # manual toggle for now
+def debug_log(*args):
+    allow_debug_log = True  # manual toggle for now
 
-    if allow_test_log:
+    if allow_debug_log:
         print(f"\n>>> {AnsiColorFormatter.blue_light_bg}{AnsiColorFormatter.black}\
               {'\n'.join([str(arg) for arg in args])}{AnsiColorFormatter.no_style}")
 
@@ -106,4 +106,4 @@ if __name__ == "__main__":
     logger.warning("Testing Warning Message")
     logger.error("Testing Error Message")
 
-    test_log("test", "test_log()")
+    debug_log("testing", "debug_log()")

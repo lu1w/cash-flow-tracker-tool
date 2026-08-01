@@ -17,7 +17,7 @@ from src.enum.category import Category, CategoryInflow, CategoryOutflow
 from src.enum.account import Account
 from src.enum.cashflow_direction import CashflowDirection
 from src.parse_strategy.parse_strategy_base import ParseStrategyBase
-from src.utils.logger import logger, test_log
+from src.utils.logger import logger, debug_log
 
 
 class AlipayColumn(Enum):
@@ -164,4 +164,4 @@ if __name__ == "__main__":
     # from pprint import pprint
     # pprint(AlipayParseStrategy.__dict__)
 
-    test_log("Run from main.py to see the result")
+    debug_log("Run from main.py to see the result")

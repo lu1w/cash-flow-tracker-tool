@@ -21,28 +21,32 @@ class CategoryInflow(Category):
 class CategoryOutflow(Category):
     UNKNOWN = 0
     TRANSACTION = auto()
+
     HOUSING = auto()
-    BILL = auto()
-    FOOD = auto()
-    TRANSPORTATION = auto()
-    BEAUTY = auto()
-    CLOTHING = auto()
-    JEWELRY = auto()
-    ENTERTAINMENT = auto()
-    GIFT = auto()
     FURNITURE_APPLIANCES = auto()
-    LIVING = auto()
-    FITNESS = auto()
-    HEALTH = auto()
+    BILL = auto()
+    TRANSPORTATION = auto()
     TELECOMMUNICATION = auto()
-    ELECTRONICS = auto()
     DELIVERY = auto()
+
     GOVERNMENT_SERVICE = auto()
-    STATIONERY = auto()
+    TAX = auto()
+    LIVING = auto()
+    HEALTH = auto()
+
     EDUCATION = auto()
     CAREER_GROWTH = auto()
-    TAX = auto()
     HOBBIES = auto()
+
+    FITNESS = auto()
+    FOOD = auto()
+    ELECTRONICS = auto()
+    STATIONERY = auto()
+    APPAREL = auto()
+    BEAUTY = auto()
+    ENTERTAINMENT = auto()
+
+    GIFT = auto()
 
     def __repr__(self):
         return super().__repr__()

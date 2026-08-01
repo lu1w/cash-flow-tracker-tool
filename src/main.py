@@ -24,6 +24,9 @@ def main():
         parser = Parser(strategy)
         parser.execute()
 
+    categorizer = Categorizer()
+    categorizer.categorize()
+
     # 2. Combine monthly files of all accounts
 
     # 3. Generate yearly file
