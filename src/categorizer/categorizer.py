@@ -68,7 +68,7 @@ class Categorizer():
 
         df = df.copy()
         # uncategorized_mask = df[Column.CATEGORY.value].insna()
-        uncategorized_mask = df[Column.CATEGORY.value] == ""
+        uncategorized_mask = (df[Column.CATEGORY.value] == "") | (df[Column.CATEGORY.value] == "Unknown")
         uncategorized: pd.DataFrame = df[uncategorized_mask]
 
         if uncategorized.empty:

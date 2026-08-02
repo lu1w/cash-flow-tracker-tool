@@ -20,6 +20,7 @@ class CategoryInflow(Category):
 
 class CategoryOutflow(Category):
     UNKNOWN = 0
+
     TRANSACTION = auto()
 
     HOUSING = auto()
@@ -53,6 +54,7 @@ class CategoryOutflow(Category):
 
 
 if __name__ == "__main__":
+    print(CategoryOutflow.UNKNOWN)
     print(repr(CategoryOutflow.TAX))
     print(CategoryOutflow.TAX)
     print(CategoryOutflow.DAILY_NECESSITY.name)

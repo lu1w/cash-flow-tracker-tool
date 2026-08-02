@@ -51,7 +51,7 @@ class HsbcParseStrategy(ParseStrategyBase):
     def _get_category(cls, item_description: str) -> Category:
         if cls.cash_rebase_keyword in item_description:
             return CategoryInflow.CASH_REBATE.name
-        return "TODO"
+        return "Unknown"  # TODO(PL9): replace magic value
 
     @override
     @classmethod

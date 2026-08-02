@@ -49,13 +49,13 @@ ALIPAY_CASHFLOW_DIRECTION: Dict[str, CashflowDirection] = {
     "不计收支": CashflowDirection.UNKNOWN  # TODO: check why does this show up in the data
 }
 
-ALIPAY_INFLOW_CATEGORY_MAPPING: Dict[str, Callable[[Series], CategoryInflow]] = {
+ALIPAY_INFLOW_CATEGORY_MAPPING: Dict[str, Callable[[Series], str]] = {
     "退款": lambda _: CategoryInflow.REFUND.name,
     "转账红包": lambda row: CategoryInflow.TRANSACTION.name if row[AlipayColumn.ITEM_DETAIL.column_name] == "转账" else CategoryInflow.GIFT.name
 }
 
 # TODO: implementation of the non-deterministic mapping functions
-ALIPAY_OUTFLOW_CATEGORY_MAPPING: Dict[str, Callable[[Series | None], CategoryOutflow]] = {
+ALIPAY_OUTFLOW_CATEGORY_MAPPING: Dict[str, Callable[[Series], str]] = {
     "交通出行": lambda _: CategoryOutflow.TRANSPORTATION.name,
     "日用百货": lambda _: CategoryOutflow.LIVING.name,
     "家居家装": lambda _: CategoryOutflow.LIVING.name,
@@ -64,7 +64,7 @@ ALIPAY_OUTFLOW_CATEGORY_MAPPING: Dict[str, Callable[[Series | None], CategoryOut
     "酒店旅游": lambda _: CategoryOutflow.HOUSING.name,
     "教育培训": lambda _: CategoryOutflow.EDUCATION.name,
     "运动户外": lambda _: CategoryOutflow.FITNESS.name,
-    "服饰装扮": lambda _: CategoryOutflow.CLOTHING.name,
+    "服饰装扮": lambda _: CategoryOutflow.APPAREL.name,
     "美容美发": lambda _: CategoryOutflow.BEAUTY.name,
     "数码电器": lambda _: CategoryOutflow.ELECTRONICS.name,
     "充值缴费": lambda row: CategoryOutflow.TELECOMMUNICATION.name if row[AlipayColumn.COUNTERPARTY.column_name] == "中国移动" else CategoryOutflow.UNKNOWN.name,
@@ -118,17 +118,23 @@ class AlipayParseStrategy(ParseStrategyBase):
         def derive_category() -> Category:
             category_column_name = AlipayColumn.CATEGORY.column_name
 
-            def derive_to_unknown(_):
-                logger.warning(f"Unknown Alipay category: {row}")
-                return CategoryOutflow.UNKNOWN.name
+            def derive_to_unknown(default_category: Category):
+                logger.warning(f"Unknown Alipay category: \n{row}")
+                return lambda _: default_category
 
             match cashflow_direction:
                 case CashflowDirection.INFLOW:
-                    return ALIPAY_INFLOW_CATEGORY_MAPPING.get(row[category_column_name], derive_to_unknown)(row)
+                    return ALIPAY_INFLOW_CATEGORY_MAPPING.get(
+                        row[category_column_name],
+                        derive_to_unknown(CategoryInflow.UNKNOWN.name)
+                    )(row)
                 case CashflowDirection.OUTFLOW:
-                    return ALIPAY_OUTFLOW_CATEGORY_MAPPING.get(row[category_column_name], derive_to_unknown)(row)
+                    return ALIPAY_OUTFLOW_CATEGORY_MAPPING.get(
+                        row[category_column_name],
+                        derive_to_unknown(CategoryOutflow.UNKNOWN.name)
+                    )(row)
                 case _:
-                    return row[category_column_name]
+                    return "Unknown"  # TODO(PL9): remove magic value for unknown category
 
         # Populate output
         output_row: Series = Series([])
