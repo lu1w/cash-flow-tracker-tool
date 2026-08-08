@@ -47,12 +47,6 @@ class HsbcParseStrategy(ParseStrategyBase):
     # refund_category = "退款"
     cash_rebase_keyword = "CREDIT AS ADVISED"
 
-    @classmethod
-    def _get_category(cls, item_description: str) -> Category:
-        if cls.cash_rebase_keyword in item_description:
-            return CategoryInflow.CASH_REBATE.name
-        return "Unknown"  # TODO(PL9): replace magic value
-
     @override
     @classmethod
     def load_data(cls, file_path: Path) -> DataFrame:
@@ -70,6 +64,11 @@ class HsbcParseStrategy(ParseStrategyBase):
             else CashflowDirection.INFLOW
         net_amount = float(row[HsbcColumn.NET_AMOUNT.column_name].strip().replace(",", ""))
 
+        def derive_category(item_description: str) -> Category:
+            if cls.cash_rebase_keyword in item_description:
+                return CategoryInflow.CASH_REBATE.name
+            return "Unknown"  # TODO(PL9): replace magic value
+
         # Populate output
         output_row: Series = Series([])
 
@@ -78,7 +77,9 @@ class HsbcParseStrategy(ParseStrategyBase):
         date: pd.Timestamp = pd.to_datetime(row[HsbcColumn.DATE.column_name], format='%d/%m/%Y')
         output_row[Column.DATE.value] = date
 
-        output_row[Column.CATEGORY.value] = cls._get_category(row[HsbcColumn.ITEM_DETAIL.column_name])
+        output_row[Column.CATEGORY.value] = derive_category(row[HsbcColumn.ITEM_DETAIL.column_name])
+        output_row[Column.CATEGORY_CONFIDENCE.value] = 0.1
+        output_row[Column.CATEGORY_RESOLVER.value] = "parser"
         output_row[Column.CATEGORY_RAW.value] = "--"
 
         output_row[Column.CURRENCY.value] = cls.currency.name

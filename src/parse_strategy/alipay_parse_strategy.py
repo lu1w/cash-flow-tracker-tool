@@ -118,20 +118,20 @@ class AlipayParseStrategy(ParseStrategyBase):
         def derive_category() -> Category:
             category_column_name = AlipayColumn.CATEGORY.column_name
 
-            def derive_to_unknown(default_category: Category):
+            def derive_to_unknown(row, default_category: Category):
                 logger.warning(f"Unknown Alipay category: \n{row}")
-                return lambda _: default_category
+                return default_category
 
             match cashflow_direction:
                 case CashflowDirection.INFLOW:
                     return ALIPAY_INFLOW_CATEGORY_MAPPING.get(
                         row[category_column_name],
-                        derive_to_unknown(CategoryInflow.UNKNOWN.name)
+                        lambda row: derive_to_unknown(row, CategoryInflow.UNKNOWN.name)
                     )(row)
                 case CashflowDirection.OUTFLOW:
                     return ALIPAY_OUTFLOW_CATEGORY_MAPPING.get(
                         row[category_column_name],
-                        derive_to_unknown(CategoryOutflow.UNKNOWN.name)
+                        lambda row: derive_to_unknown(row, CategoryOutflow.UNKNOWN.name)
                     )(row)
                 case _:
                     return "Unknown"  # TODO(PL9): remove magic value for unknown category
@@ -143,6 +143,8 @@ class AlipayParseStrategy(ParseStrategyBase):
         output_row[Column.DATE.value] = date
 
         output_row[Column.CATEGORY.value] = derive_category()
+        output_row[Column.CATEGORY_CONFIDENCE.value] = 0.1
+        output_row[Column.CATEGORY_RESOLVER.value] = "parser"
         output_row[Column.CATEGORY_RAW.value] = row[AlipayColumn.CATEGORY.column_name]
 
         output_row[Column.CURRENCY.value] = cls.currency.name

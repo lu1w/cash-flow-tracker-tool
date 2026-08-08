@@ -98,6 +98,8 @@ class WechatParseStrategy(ParseStrategyBase):
         # Wechat category does not tell anything, need to refer to the ITEM_DETAIL column
         # NOTE: should be REFUND if cls.refund_category_keyword in row[WechatColumn.CATEGORY.column_name]
         output_row[Column.CATEGORY.value] = derive_category()
+        output_row[Column.CATEGORY_CONFIDENCE.value] = 0.1
+        output_row[Column.CATEGORY_RESOLVER.value] = "parser"
         output_row[Column.CATEGORY_RAW.value] = row[WechatColumn.CATEGORY.column_name]
 
         output_row[Column.CURRENCY.value] = cls.currency.name
