@@ -2,6 +2,9 @@ from enum import Enum
 
 
 class Currency(Enum):
+    # FIXME: every member below (AED through ZWL, except ZWL itself) is defined with a trailing
+    # comma, e.g. `AED = 1,` — this makes `.value` a 1-element tuple like (1,) instead of an int.
+    # `Currency.CNY.value == 34` is False; it's `(34,)`. Remove all the trailing commas.
     UNKNOWN = 0
     AED = 1,  # UAE Dirham
     AFN = 2,  # Afghani

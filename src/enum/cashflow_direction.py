@@ -24,6 +24,8 @@ class CashflowDirection(Enum):
 
     @classmethod
     def get_unknown(cls, row: Series):
+        # FIXME: uses print() instead of the shared `logger` used elsewhere in the codebase, so
+        # this warning bypasses log-level filtering and the file handler (invisible in logs/DEBUG.log).
         print(f"Unknown cashflow direction for row:\n{row}\n")
         return cls.UNKNOWN
 

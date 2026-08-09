@@ -4,6 +4,8 @@ For personal usage of cashflow records analysis and visualization, based on repo
 
 ## Getting Started For Developments
 
+<!-- FIXME: switch dependency/venv management from pip + requirements.txt to uv -->
+
 1. Activate the virtual environment:
    ```
    source .venv/bin/activate

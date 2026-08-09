@@ -66,6 +66,8 @@ class WechatParseStrategy(ParseStrategyBase):
             data = pd.read_excel(file_path, skiprows=17).drop(columns_to_drop, axis=1)
             return data
         except UnicodeDecodeError as e:
+            # FIXME: missing `return` here — falls through to implicit `return None`, which then
+            # raises a confusing AttributeError in Parser._process_file and masks this real error.
             logger.exception(f"Error in decoding the data file `{file_path}`: {e}")
 
     @override
@@ -75,10 +77,14 @@ class WechatParseStrategy(ParseStrategyBase):
             WECHAT_CASHFLOW_DIRECTION_MAPPING.get(row[WechatColumn.CASHFLOW_DIRECTION.column_name]) \
             or CashflowDirection.get_unknown(row)
 
+        # FIXME: derive_category() is fully implemented below but never called — parse_row hardcodes
+        # Category to "TODO: check items description" instead (see below), so every WeChat
+        # transaction is permanently mis-categorized and never picked up by the embedding
+        # categorizer (which only targets rows with an empty-string category).
         def derive_category() -> Category:
             match row[WechatColumn.CASHFLOW_DIRECTION.column_name]:
                 case WechatCashflowDirection.INFLOW.value:
-                    pass
+                    pass  # FIXME: falls through and implicitly returns None instead of a category
                 case WechatCashflowDirection.OUTFLOW.value:
                     if (
                         "滴滴出行" in row[WechatColumn.COUNTERPARTY.column_name]

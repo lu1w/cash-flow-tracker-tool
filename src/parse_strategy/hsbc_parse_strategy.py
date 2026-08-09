@@ -61,11 +61,16 @@ class HsbcParseStrategy(ParseStrategyBase):
             data = pd.read_csv(file_path, encoding=cls.encoding).drop(columns_to_drop, axis=1)
             return data
         except UnicodeDecodeError as e:
+            # FIXME: missing `return` here — falls through to implicit `return None`, which then
+            # raises a confusing AttributeError in Parser._process_file and masks this real error.
             logger.exception(f"Error in decoding the data file `{file_path}`: {e}")
 
     @override
     @classmethod
     def parse_row(cls, row: Series) -> Series:
+        # FIXME: assumes NET_AMOUNT/BALANCE are always read as strings, but pandas parses them as
+        # float64 whenever no value in the column needs a thousands separator, causing
+        # `row[...][0]` to raise IndexError and `.strip()` below to raise AttributeError on a float.
         cashflow_direction = CashflowDirection.OUTFLOW if row[HsbcColumn.NET_AMOUNT.column_name][0] == "-" \
             else CashflowDirection.INFLOW
         net_amount = float(row[HsbcColumn.NET_AMOUNT.column_name].strip().replace(",", ""))

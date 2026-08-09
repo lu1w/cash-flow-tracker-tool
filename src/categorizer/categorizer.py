@@ -46,6 +46,9 @@ class Categorizer():
         logger.info(f"Building reference index from files in {ref_data_dir}")
 
         reference_files = list(Path(ref_data_dir).glob("*.csv"))
+        # FIXME: no guard for an empty/nonexistent reference directory — on a fresh checkout
+        # (e.g. default .data/output with no CSVs yet), pd.concat([]) raises
+        # `ValueError: No objects to concatenate`, crashing categorize() for a first-time user.
         reference_df = pd.concat([pd.read_csv(file) for file in reference_files], ignore_index=True)
         descriptions = reference_df[Column.DESCRIPTION.value].tolist()
         embeddings: np.ndarray = self.model.encode(descriptions, show_progress_bar=False)
@@ -100,6 +103,9 @@ class Categorizer():
                 df.at[original_idx, Column.CATEGORY_CONFIDENCE] = round(float(score), 4)
                 df.at[original_idx, Column.CATEGORY_RESOLVER] = "embedding"
 
+        # FIXME: dead variable, and semantically wrong — df is read with keep_default_na=False,
+        # so no cell is ever NaN and .notna().sum() always equals len(df). The real "categorized
+        # after embeddings" count using `!= ""` is already computed two lines below.
         categorized = df[Column.CATEGORY.value].notna().sum()
         total = len(df)
         logger.info(f"Categorized before embedding: {total - uncategorized_mask.sum()}/{total}\n" +
@@ -108,6 +114,8 @@ class Categorizer():
         return df
 
     def get_output_csv_file_path(self, input_file_path: Path) -> Path:
+        # FIXME: unconditionally appends ".csv" even when input_file_path already ends in .csv,
+        # producing double extensions like "standardized_data_no_category.csv.csv".
         categorized_data_dir_path = Path(FileConfig.CATEGORIZED_DATA_DIR)
         categorized_data_dir_path.mkdir(parents=True, exist_ok=True)
         return Path(f"{categorized_data_dir_path}/{input_file_path.name}.csv")

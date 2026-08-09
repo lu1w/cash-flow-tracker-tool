@@ -15,6 +15,10 @@ from src.utils.logger import test_log
 
 @pytest.fixture
 def data_file_standardized_data_no_category_csv() -> Path:
+    # FIXME: this fixture's header uses "RAW Category" while src/enum/column.py defines
+    # Column.CATEGORY_RAW.value as "Raw Category" (different casing) — stale since the
+    # Column rename in commit ae6f566. Currently masked because no test reads that column
+    # by name; regenerate the fixture to match Column.CATEGORY_RAW.
     return Path(f"{FileConfig.STANDARDIZED_DATA_DIR}/standardized_data_no_category.csv")
 
 

@@ -1,6 +1,10 @@
 from pandas import DataFrame
 
 
+# FIXME: this whole class is dead code (never imported anywhere) and is broken if wired up:
+# self.data is never defined/set anywhere, AlipayColumns is undefined/not imported below, and
+# total_spent/total_received hardcode a column name "Amount" that doesn't exist in the real
+# schema (should be "Absolute Amount"/"Net Amount" per src/enum/column.py's Column enum).
 class Analyzer:
     def filter_by_category(self, category: str) -> DataFrame | str:
         """
