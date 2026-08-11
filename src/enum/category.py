@@ -4,7 +4,8 @@ from enum import Enum, auto
 class Category(Enum):
     @property
     def name(self):
-        return ' '.join(self._name_.title().split('_'))
+        name = self._name_.replace('_AND_', '_&_')
+        return ' '.join(name.title().split('_'))
 
 
 class CategoryInflow(Category):
@@ -24,7 +25,6 @@ class CategoryOutflow(Category):
     TRANSACTION = auto()
 
     HOUSING = auto()
-    FURNITURE_APPLIANCES = auto()
     BILL = auto()
     TRANSPORTATION = auto()
     TELECOMMUNICATION = auto()
@@ -36,14 +36,14 @@ class CategoryOutflow(Category):
     HEALTH = auto()
 
     EDUCATION = auto()
-    CAREER_GROWTH = auto()
+    CAREER = auto()
     HOBBIES = auto()
 
     FITNESS = auto()
     FOOD = auto()
     ELECTRONICS = auto()
     STATIONERY = auto()
-    APPAREL = auto()
+    CLOTHING_AND_ACCESSORIES = auto()
     BEAUTY = auto()
     ENTERTAINMENT = auto()
 
@@ -57,4 +57,6 @@ if __name__ == "__main__":
     print(CategoryOutflow.UNKNOWN)
     print(repr(CategoryOutflow.TAX))
     print(CategoryOutflow.TAX)
-    print(CategoryOutflow.DAILY_NECESSITY.name)
+    print(CategoryOutflow.ENTERTAINMENT.name)
+    print(CategoryOutflow.CLOTHING_AND_ACCESSORIES.name)
+    print(CategoryOutflow.GOVERNMENT_SERVICE.name)

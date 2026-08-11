@@ -10,6 +10,7 @@ from torch import Tensor
 project_root = str(Path(__file__).parent.parent.parent)
 sys.path.append(project_root)
 from src.enum.category import Category, CategoryInflow, CategoryOutflow
+from src.enum.category_resolver import CategoryResolver
 from src.enum.column import Column
 from src.config.config import FileConfig
 from src.utils.logger import logger, debug_log
@@ -37,12 +38,12 @@ class Categorizer():
             # tokenizer_kwargs={"padding_side": "left"},
         )
 
-    def _build_reference_index(self) -> tuple[pd.DataFrame, np.ndarray]:
+    def _build_category_reference_index(self) -> tuple[pd.DataFrame, np.ndarray]:
         """
         Load a labeled reference set in a CSV and encode it.
         The reference CSV must have columns: Description, Category
         """
-        ref_data_dir = FileConfig.REFERENCE_DATA_DIR
+        ref_data_dir = FileConfig.CATEGORY_REFERENCE_DATA_DIR
         logger.info(f"Building reference index from files in {ref_data_dir}")
 
         reference_files = list(Path(ref_data_dir).glob("*.csv"))
@@ -98,7 +99,7 @@ class Categorizer():
             if score >= EMBEDDING_THRESHOLD:
                 df.at[original_idx, Column.CATEGORY] = reference_df.iloc[best_indices[i].item()][Column.CATEGORY]
                 df.at[original_idx, Column.CATEGORY_CONFIDENCE] = round(float(score), 4)
-                df.at[original_idx, Column.CATEGORY_RESOLVER] = "embedding"
+                df.at[original_idx, Column.CATEGORY_RESOLVER] = CategoryResolver.EMBEDDING
 
         categorized = df[Column.CATEGORY.value].notna().sum()
         total = len(df)
@@ -133,7 +134,7 @@ class Categorizer():
         # Categorize based on embedding similarity based on labeled data
         logger.info("Applying embedding similarity...")
 
-        ref_df, ref_embeddings = self._build_reference_index()
+        ref_df, ref_embeddings = self._build_category_reference_index()
         df = self._apply_embeddings(df, ref_df, ref_embeddings)
 
         # Write categorized result to file

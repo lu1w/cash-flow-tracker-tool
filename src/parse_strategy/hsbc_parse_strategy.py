@@ -13,6 +13,7 @@ project_root = str(Path(__file__).parent.parent.parent)
 sys.path.append(project_root)
 from src.enum.column import Column
 from src.enum.currency import Currency
+from src.enum.category_resolver import CategoryResolver
 from src.enum.category import Category, CategoryInflow, CategoryOutflow
 from src.enum.account import Account
 from src.enum.cashflow_direction import CashflowDirection
@@ -79,7 +80,7 @@ class HsbcParseStrategy(ParseStrategyBase):
 
         output_row[Column.CATEGORY.value] = derive_category(row[HsbcColumn.ITEM_DETAIL.column_name])
         output_row[Column.CATEGORY_CONFIDENCE.value] = 0.1
-        output_row[Column.CATEGORY_RESOLVER.value] = "parser"
+        output_row[Column.CATEGORY_RESOLVER.value] = CategoryResolver.RULES
         output_row[Column.CATEGORY_RAW.value] = "--"
 
         output_row[Column.CURRENCY.value] = cls.currency.name

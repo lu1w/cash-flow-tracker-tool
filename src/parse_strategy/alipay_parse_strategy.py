@@ -13,6 +13,7 @@ project_root = str(Path(__file__).parent.parent.parent)
 sys.path.append(project_root)
 from src.enum.column import Column
 from src.enum.currency import Currency
+from src.enum.category_resolver import CategoryResolver
 from src.enum.category import Category, CategoryInflow, CategoryOutflow
 from src.enum.account import Account
 from src.enum.cashflow_direction import CashflowDirection
@@ -54,7 +55,6 @@ ALIPAY_INFLOW_CATEGORY_MAPPING: Dict[str, Callable[[Series], str]] = {
     "转账红包": lambda row: CategoryInflow.TRANSACTION.name if row[AlipayColumn.ITEM_DETAIL.column_name] == "转账" else CategoryInflow.GIFT.name
 }
 
-# TODO: implementation of the non-deterministic mapping functions
 ALIPAY_OUTFLOW_CATEGORY_MAPPING: Dict[str, Callable[[Series], str]] = {
     "交通出行": lambda _: CategoryOutflow.TRANSPORTATION.name,
     "日用百货": lambda _: CategoryOutflow.LIVING.name,
@@ -64,7 +64,7 @@ ALIPAY_OUTFLOW_CATEGORY_MAPPING: Dict[str, Callable[[Series], str]] = {
     "酒店旅游": lambda _: CategoryOutflow.HOUSING.name,
     "教育培训": lambda _: CategoryOutflow.EDUCATION.name,
     "运动户外": lambda _: CategoryOutflow.FITNESS.name,
-    "服饰装扮": lambda _: CategoryOutflow.APPAREL.name,
+    "服饰装扮": lambda _: CategoryOutflow.CLOTHING_AND_ACCESSORIES.name,
     "美容美发": lambda _: CategoryOutflow.BEAUTY.name,
     "数码电器": lambda _: CategoryOutflow.ELECTRONICS.name,
     "充值缴费": lambda row: CategoryOutflow.TELECOMMUNICATION.name if row[AlipayColumn.COUNTERPARTY.column_name] == "中国移动" else CategoryOutflow.UNKNOWN.name,
@@ -144,7 +144,7 @@ class AlipayParseStrategy(ParseStrategyBase):
 
         output_row[Column.CATEGORY.value] = derive_category()
         output_row[Column.CATEGORY_CONFIDENCE.value] = 0.1
-        output_row[Column.CATEGORY_RESOLVER.value] = "parser"
+        output_row[Column.CATEGORY_RESOLVER.value] = CategoryResolver.RULES
         output_row[Column.CATEGORY_RAW.value] = row[AlipayColumn.CATEGORY.column_name]
 
         output_row[Column.CURRENCY.value] = cls.currency.name

@@ -12,6 +12,7 @@ from src.parse_strategy.parse_strategy_base import ParseStrategyBase
 from src.utils.logger import logger, debug_log
 from src.enum.account import Account
 from src.enum.cashflow_direction import CashflowDirection
+from src.enum.category_resolver import CategoryResolver
 from src.enum.category import Category, CategoryInflow, CategoryOutflow
 from src.enum.column import Column
 from src.enum.currency import Currency
@@ -99,7 +100,7 @@ class WechatParseStrategy(ParseStrategyBase):
         # NOTE: should be REFUND if cls.refund_category_keyword in row[WechatColumn.CATEGORY.column_name]
         output_row[Column.CATEGORY.value] = derive_category()
         output_row[Column.CATEGORY_CONFIDENCE.value] = 0.1
-        output_row[Column.CATEGORY_RESOLVER.value] = "parser"
+        output_row[Column.CATEGORY_RESOLVER.value] = CategoryResolver.RULES
         output_row[Column.CATEGORY_RAW.value] = row[WechatColumn.CATEGORY.column_name]
 
         output_row[Column.CURRENCY.value] = cls.currency.name
