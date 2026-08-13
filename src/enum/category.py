@@ -35,7 +35,7 @@ class CategoryOutflow(Category):
     LIVING = auto()
     HEALTH = auto()
 
-    EDUCATION = auto()
+    PERSONAL_GROWTH = auto()
     CAREER = auto()
     HOBBIES = auto()
 

@@ -9,31 +9,14 @@ sys.path.append(project_root)
 from src.config.config import FileConfig
 from src.enum.column import Column
 from src.enum.category_resolver import CategoryResolver
+from src.utils.file_paths_utils import map_file_path
 from src.utils.logger import logger
 
-MANUAL_CATEGORY_RESOLVER: Final = "manual"
 MANUAL_CATEGORY_CONFIDENCE: Final[int] = 1
 
 
-def _get_standardized_path_from_category_reference_path(reference_file_path: Path) -> Path:
-    reference_dir = Path(FileConfig.CATEGORY_REFERENCE_DATA_DIR)
-    standardized_dir = Path(FileConfig.STANDARDIZED_DATA_DIR)
-
-    try:
-        relative_path = reference_file_path.relative_to(reference_dir)
-    except ValueError:
-        reference_path_str = str(reference_file_path)
-        reference_dir_str = str(reference_dir)
-        if reference_dir_str not in reference_path_str:
-            raise ValueError(
-                f"Reference file path must be under {reference_dir}: {reference_file_path}"
-            )
-        standardized_path_str = reference_path_str.replace(
-            reference_dir_str, str(standardized_dir), 1
-        )
-        return Path(standardized_path_str)
-
-    return standardized_dir / relative_path
+def _map_category_reference_file_to_standardized_file(reference_file_path: Path) -> Path:
+    return map_file_path(reference_file_path, FileConfig.CATEGORY_REFERENCE_DATA_DIR, FileConfig.STANDARDIZED_DATA_DIR)
 
 
 def _mark_manual_category_resolver(
@@ -59,9 +42,6 @@ def _mark_manual_category_resolver(
     if isinstance(original_file_path, str):
         original_file_path = Path(original_file_path)
 
-    # reference_path = edited_file_path  # _cleansed_csv_path(file_path)
-    # standardized_path = _to_standardized_path(reference_path)
-
     if verify_matching_suffix:
         if edited_file_path.name != original_file_path.name:
             raise ValueError(f"Mismatch suffix for files to compare")
@@ -73,22 +53,23 @@ def _mark_manual_category_resolver(
     original_df = pd.read_csv(original_file_path, keep_default_na=False)
     edited_df = pd.read_csv(edited_file_path, keep_default_na=False)
 
-    original_categories = original_df.set_index(
-        [Column.DATE, Column.AMOUNT_ABSOLUTE]
-    )[Column.CATEGORY]
-
     manual_resolver_count = 0
     # edited_df = edited_df.copy()
 
     for idx, row in edited_df.iterrows():
-        key = (row[Column.DATE], row[Column.AMOUNT_ABSOLUTE])
+        if (
+            row[Column.CATEGORY] != original_df.at[idx, Column.CATEGORY]
+            or row[Column.DESCRIPTION] != original_df.at[idx, Column.DESCRIPTION]
+        ):
+            if ((row[Column.DATE], row[Column.AMOUNT_ABSOLUTE])
+                    != (original_df.at[idx, Column.DATE], original_df.at[idx, Column.AMOUNT_ABSOLUTE])):
+                logger.error(
+                    f"Row edited by human does not have the same keyed row in the original file at the same index {idx}.\n"
+                    + f"Edited row: date={row[Column.DATE]}, amount={row[Column.AMOUNT_ABSOLUTE]};\n"
+                    + f"original row: date={original_df.at[idx, Column.DATE]}, amount={original_df.at[idx, Column.AMOUNT_ABSOLUTE]}.")
+                continue
 
-        if key not in original_categories.index:
-            logger.error(f"Failed to find matching entry in standardized/ file for row key {key}")
-            continue
-
-        if row[Column.CATEGORY] != original_categories[key] and row[Column.CATEGORY] != CategoryResolver.MANUAL:
-            edited_df.at[idx, Column.CATEGORY_RESOLVER] = MANUAL_CATEGORY_RESOLVER
+            edited_df.at[idx, Column.CATEGORY_RESOLVER] = CategoryResolver.MANUAL
             edited_df.at[idx, Column.CATEGORY_CONFIDENCE] = int(MANUAL_CATEGORY_CONFIDENCE)
             manual_resolver_count += 1
 
@@ -120,9 +101,9 @@ def cleanse_category_resolver() -> None:
     for category_ref_file in category_reference_files:
         cleansed_df = _mark_manual_category_resolver(
             category_ref_file,
-            _get_standardized_path_from_category_reference_path(category_ref_file)
+            _map_category_reference_file_to_standardized_file(category_ref_file)
         )
-        cleansed_df.to_csv(category_ref_file)
+        cleansed_df.to_csv(category_ref_file, index=False, encoding="utf-8")
 
 
 if __name__ == "__main__":
