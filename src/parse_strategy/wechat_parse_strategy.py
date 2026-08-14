@@ -9,9 +9,10 @@ from typing import List, Dict, override
 project_root = str(Path(__file__).parent.parent.parent)
 sys.path.append(project_root)
 from src.parse_strategy.parse_strategy_base import ParseStrategyBase
-from src.utils.logger import logger, test_log
+from src.utils.logger import logger, debug_log
 from src.enum.account import Account
 from src.enum.cashflow_direction import CashflowDirection
+from src.enum.category_resolver import CategoryResolver
 from src.enum.category import Category, CategoryInflow, CategoryOutflow
 from src.enum.column import Column
 from src.enum.currency import Currency
@@ -75,22 +76,19 @@ class WechatParseStrategy(ParseStrategyBase):
             WECHAT_CASHFLOW_DIRECTION_MAPPING.get(row[WechatColumn.CASHFLOW_DIRECTION.column_name]) \
             or CashflowDirection.get_unknown(row)
 
-        def derive_category() -> Category:
+        def derive_category() -> str:
             match row[WechatColumn.CASHFLOW_DIRECTION.column_name]:
                 case WechatCashflowDirection.INFLOW.value:
-                    pass
+                    return CategoryInflow.UNKNOWN.name
                 case WechatCashflowDirection.OUTFLOW.value:
                     if (
                         "滴滴出行" in row[WechatColumn.COUNTERPARTY.column_name]
                     ):
-                        return CategoryOutflow.TRANSPORTATION
-
-                    if (
-                        "普拉提瑜伽工作室" in row[WechatColumn.COUNTERPARTY.column_name]
-                    ):
-                        return CategoryOutflow.FITNESS
+                        return CategoryOutflow.TRANSPORTATION.name
+                    return CategoryOutflow.UNKNOWN.name
                 case _:
-                    raise Exception(f"Unknown cashflow direction: {row}")
+                    # raise Exception(f"Unknown cashflow direction: {row}")
+                    return "Unknown"  # TODO(PL9): replace magic value
 
         # Populate output
         output_row: pd.Series = pd.Series([])
@@ -100,7 +98,9 @@ class WechatParseStrategy(ParseStrategyBase):
 
         # Wechat category does not tell anything, need to refer to the ITEM_DETAIL column
         # NOTE: should be REFUND if cls.refund_category_keyword in row[WechatColumn.CATEGORY.column_name]
-        output_row[Column.CATEGORY.value] = "TODO: check items description"
+        output_row[Column.CATEGORY.value] = derive_category()
+        output_row[Column.CATEGORY_CONFIDENCE.value] = 0.1
+        output_row[Column.CATEGORY_RESOLVER.value] = CategoryResolver.RULES
         output_row[Column.CATEGORY_RAW.value] = row[WechatColumn.CATEGORY.column_name]
 
         output_row[Column.CURRENCY.value] = cls.currency.name
@@ -112,7 +112,7 @@ class WechatParseStrategy(ParseStrategyBase):
 
         output_row[Column.ACCOUNT_BALANCE.value] = "todo"
         output_row[Column.DESCRIPTION.value] = row[WechatColumn.ITEM_DETAIL.column_name]
-        output_row[Column.REMARK.value] = "--"
+        output_row[Column.REMARK.value] = ""
 
         # TODO: handle aggregation; if aggregated, should have recored split to single items,
         # and the aggregated record should not be recorded in analysis
@@ -142,4 +142,4 @@ class WechatRawParseStrategy(WechatParseStrategy):
 
 
 if __name__ == "__main__":
-    test_log("Run from main.py to see the result")
+    debug_log("Run from main.py to see the result")

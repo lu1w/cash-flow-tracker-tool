@@ -19,10 +19,18 @@ def main():
     print("Welcome to cash flow tracker tool!")
 
     # 1. parse files to standardized format
-    for strategy in [AlipayParseStrategy, WechatParseStrategy, HsbcParseStrategy,
-                     WechatRawParseStrategy]:
+    for strategy in [
+        # AlipayParseStrategy,
+        # WechatParseStrategy,
+        # HsbcParseStrategy,
+        # WechatRawParseStrategy
+    ]:
         parser = Parser(strategy)
         parser.execute()
+
+    categorizer = Categorizer()
+    from src.enum.account import Account
+    categorizer.categorize_all_standardized_files(accounts=(Account.ALIPAY,))
 
     # 2. Combine monthly files of all accounts
 

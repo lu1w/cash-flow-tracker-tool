@@ -38,9 +38,16 @@ class Account(Enum):
             return f"{self.account_type} ({self.currency.name})"
         return f"{self.account_type}"
 
+    @property
+    def dir_name(self):
+        return self.name.lower()
+
+
+ALL_ACTIVE_ACCOUNTS = (Account.ALIPAY, Account.WECHAT, Account.HSBC_HKD)
 
 # Tests:
 if __name__ == "__main__":
     # assert str(Account.HSBC_HKD) == "HSBC (HKD)"
     assert Account.CASH_CNY.value == f"{CASH} (CNY)"
     assert Account.CASH_AUD.name == "CASH_AUD"
+    assert Account.ALIPAY.name == "ALIPAY"

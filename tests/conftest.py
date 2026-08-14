@@ -16,7 +16,9 @@ from dotenv import load_dotenv
 
 PROJECT_ROOT = Path(__file__).parent.parent
 
-load_dotenv(PROJECT_ROOT / ".env.test", override=True)
+test_env = PROJECT_ROOT / ".env.test"
+print(f"Loading {test_env}...")
+load_dotenv(test_env, override=True)
 
 pytest_plugins = []
 '''
@@ -49,8 +51,8 @@ def project_root() -> Path:
 
 
 # @pytest.fixture
-# def reference_dir() -> Path:
-#     return Path(os.getenv("REFERENCE_DATA_DIR"))
+# def category_reference_dir() -> Path:
+#     return Path(os.getenv("CATEGORY_REFERENCE_DATA_DIR"))
 
 
 @pytest.fixture  # TODO: can remove this

@@ -25,7 +25,7 @@ For personal usage of cashflow records analysis and visualization, based on repo
    python -m src.main
    ```
 
-## Flow
+## Flow (Plan)
 
 1. Parse the account-specific report files to account-monthly-files with pre-defined columns in CSV
    1. Load data from account's CSV/Excel/etc file
@@ -34,6 +34,16 @@ For personal usage of cashflow records analysis and visualization, based on repo
 3. Combine the all-accounts-monthly-file to yearly-files
 4. Generate monthly analyses based on the all-accounts-monthly-files
 5. Generate yearly analyses based on the yearly-files
+
+
+### Step 1 - Get account-specific report files 
+```mermaid
+graph LR
+    A[report.csv] --> B[parser.py]
+    B --> C[categorizer.py]
+    C -->|manual edit| D[reference.py]
+    B -->|manual edit| D
+```
 
 ## Project Structure
 
@@ -45,7 +55,7 @@ For personal usage of cashflow records analysis and visualization, based on repo
   - Utilizing the Strategy Design Pattern to parse CSV/Excel/etc. files that're formatted differently for different accounts
   - All strategy inherits from `parse_strategy_base.py`
 - `src/categorizer/`
-  - The categorizers called by parsing strategies, used for determining the category of each cashflow entry
+  - The categorizers that determines the category of each cashflow entry using embedding vestor comparison
 
 # Testing
 

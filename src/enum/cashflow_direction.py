@@ -2,6 +2,8 @@
 from enum import Enum
 from pandas import Series
 
+from src.utils.logger import logger
+
 
 class CashflowDirection(Enum):
     UNKNOWN = ("(unknown)", 0)
@@ -24,7 +26,7 @@ class CashflowDirection(Enum):
 
     @classmethod
     def get_unknown(cls, row: Series):
-        print(f"Unknown cashflow direction for row:\n{row}\n")
+        logger.warning(f"Unknown cashflow direction for row:\n{row}\n")
         return cls.UNKNOWN
 
 

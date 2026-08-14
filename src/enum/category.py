@@ -4,7 +4,8 @@ from enum import Enum, auto
 class Category(Enum):
     @property
     def name(self):
-        return ' '.join(self._name_.title().split('_'))
+        name = self._name_.replace('_AND_', '_&_')
+        return ' '.join(name.title().split('_'))
 
 
 class CategoryInflow(Category):
@@ -20,35 +21,42 @@ class CategoryInflow(Category):
 
 class CategoryOutflow(Category):
     UNKNOWN = 0
+
     TRANSACTION = auto()
+
     HOUSING = auto()
     BILL = auto()
-    FOOD = auto()
     TRANSPORTATION = auto()
-    BEAUTY = auto()
-    CLOTHING = auto()
-    JEWELRY = auto()
-    ENTERTAINMENT = auto()
-    GIFT = auto()
-    FURNITURE_APPLIANCES = auto()
-    LIVING = auto()
-    FITNESS = auto()
-    HEALTH = auto()
     TELECOMMUNICATION = auto()
-    ELECTRONICS = auto()
     DELIVERY = auto()
+
     GOVERNMENT_SERVICE = auto()
-    STATIONERY = auto()
-    EDUCATION = auto()
-    CAREER_GROWTH = auto()
     TAX = auto()
+    LIVING = auto()
+    HEALTH = auto()
+
+    PERSONAL_GROWTH = auto()
+    CAREER = auto()
     HOBBIES = auto()
+
+    FITNESS = auto()
+    FOOD = auto()
+    ELECTRONICS = auto()
+    STATIONERY = auto()
+    CLOTHING_AND_ACCESSORIES = auto()
+    BEAUTY = auto()
+    ENTERTAINMENT = auto()
+
+    GIFT = auto()
 
     def __repr__(self):
         return super().__repr__()
 
 
 if __name__ == "__main__":
+    print(CategoryOutflow.UNKNOWN)
     print(repr(CategoryOutflow.TAX))
     print(CategoryOutflow.TAX)
-    print(CategoryOutflow.DAILY_NECESSITY.name)
+    print(CategoryOutflow.ENTERTAINMENT.name)
+    print(CategoryOutflow.CLOTHING_AND_ACCESSORIES.name)
+    print(CategoryOutflow.GOVERNMENT_SERVICE.name)

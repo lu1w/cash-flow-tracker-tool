@@ -8,7 +8,7 @@ project_root = str(Path(__file__).parent.parent.parent)
 sys.path.append(project_root)
 from src.enum.cashflow_direction import CashflowDirection
 
-# TODO: utilize pydantic library to create a typed model for each row, instead of using enum to model the columns
+# TODO(PL4): utilize pydantic library to create a typed model for each row, instead of using enum to model the columns
 
 
 # NOTE: need to inherit from `StrEnum` so that Column.X can resolve to Column.X.value directly
