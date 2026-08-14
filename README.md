@@ -2,7 +2,7 @@
 
 For personal usage of cashflow records analysis and visualization, based on reports generated from payment apps.
 
-## Getting Started For Developments
+## Getting Started With Developments
 
 1. Activate the virtual environment:
    ```
@@ -20,7 +20,15 @@ For personal usage of cashflow records analysis and visualization, based on repo
    ```
    pip freeze > requirements.txt
    ```
-5. Run the project
+5. Set up your `.env` file 
+   ```
+   ENV="development"
+
+   FILE_LOGGER_ENABLED=true  # true if you want log to be written into a file
+   FILE_LOGGER_FRESH_FILE_PER_RUN=false  # true if you want a fresh new log file each time
+   FILE_LOGGER_MODE=w  # a=append, w=write
+   ```
+6. Run the project
    ```
    python -m src.main
    ```

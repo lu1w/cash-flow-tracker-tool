@@ -2,6 +2,8 @@ import sys
 import logging
 from datetime import datetime, UTC
 
+from src.config.config import LoggerConfig
+
 
 class DefaultFormatter(logging.Formatter):
     def __init__(self):
@@ -50,11 +52,6 @@ class AnsiColorFormatter(DefaultFormatter):
 
 
 class Logger:
-    # File logger setting
-    FILE_LOGGER_ENABLED: bool = True  # useful when long logs
-    FILE_LOGGER_NEW_RUN_FILE: bool = False  # useful when comparing log files
-    FILE_LOGGER_MODE: str = "w"  # a=append, w=write
-
     # logging.basicConfig(
     #     format="%(asctime)s [%(levelname)s] (%(filename)s:%(lineno)d) %(message)s",
     #     # level=logging.INFO,
@@ -74,15 +71,15 @@ class Logger:
     logger.addHandler(console_handler)
 
     # File handler
-    if FILE_LOGGER_ENABLED:
+    if LoggerConfig.FILE_LOGGER_ENABLED:
         log_level = logging.DEBUG
         log_level_name = logging.getLevelName(log_level)
 
         file_handler = logging.FileHandler(
             filename=f"logs/{log_level_name}-{datetime.now(tz=UTC)}.log"
-            if FILE_LOGGER_NEW_RUN_FILE
+            if LoggerConfig.FILE_LOGGER_FRESH_FILE_PER_RUN
             else f"logs/{log_level_name}.log",
-            mode=FILE_LOGGER_MODE
+            mode=LoggerConfig.FILE_LOGGER_MODE
         )
         file_handler.setLevel(log_level)
         file_handler.setFormatter(DefaultFormatter())
