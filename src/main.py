@@ -8,6 +8,7 @@ if __name__ == "__main__":
     sys.path.append(project_root)
 
 from src.categorizer.categorizer import Categorizer
+from src.combiner.combiner import merge_by_month
 from src.parser.parser import Parser
 from src.parse_strategy.alipay_parse_strategy import AlipayParseStrategy
 from src.parse_strategy.hsbc_parse_strategy import HsbcParseStrategy
@@ -18,21 +19,23 @@ from src.utils.logger import logger
 def main():
     print("Welcome to cash flow tracker tool!")
 
-    # 1. parse files to standardized format
+    # 1. parse files
     for strategy in [
-        # AlipayParseStrategy,
-        # WechatParseStrategy,
-        # HsbcParseStrategy,
-        # WechatRawParseStrategy
+        AlipayParseStrategy,
+        WechatParseStrategy,
+        HsbcParseStrategy,
+        WechatRawParseStrategy
     ]:
         parser = Parser(strategy)
         parser.execute()
 
     categorizer = Categorizer()
     from src.enum.account import Account
-    categorizer.categorize_all_standardized_files(accounts=(Account.ALIPAY,))
+    accounts_for_testing = (Account.ALIPAY,)
+    categorizer.process_all_standardized_files()
 
     # 2. Combine monthly files of all accounts
+    merge_by_month()
 
     # 3. Generate yearly file
 

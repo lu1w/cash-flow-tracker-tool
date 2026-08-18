@@ -2,49 +2,14 @@
 
 For personal usage of cashflow records analysis and visualization, based on reports generated from payment apps.
 
-## Getting Started With Developments
-
-1. Activate the virtual environment:
-   ```
-   source .venv/bin/activate
-   ```
-2. Install required dependencies
-   ```
-   pip install -r requirements.txt
-   ```
-3. Add new dependencies
-   ```
-   pip install <package-name>
-   ```
-4. Update requirement.txt
-   ```
-   pip freeze > requirements.txt
-   ```
-5. Set up your `.env` file 
-   ```
-   ENV="development"
-
-   FILE_LOGGER_ENABLED=true  # true if you want log to be written into a file
-   FILE_LOGGER_FRESH_FILE_PER_RUN=false  # true if you want a fresh new log file each time
-   FILE_LOGGER_MODE=w  # a=append, w=write
-   ```
-6. Run the project
-   ```
-   python -m src.main
-   ```
-
-## Flow (Plan)
-
 1. Parse the account-specific report files to account-monthly-files with pre-defined columns in CSV
    1. Load data from account's CSV/Excel/etc file
-   2. Populate column values, with the help of categorizers to handle complex logic to assign cashflow category
-2. Combine the account-monthly-files of each and every accounts into one all-accounts-monthly-file
-3. Combine the all-accounts-monthly-file to yearly-files
-4. Generate monthly analyses based on the all-accounts-monthly-files
-5. Generate yearly analyses based on the yearly-files
+   2. Populate column values based on direct mapping from the report file
+   3. Use embedding similarities to populate categories
+2. Combine the account-monthly-files of each account into one all-accounts-monthly-file; combine the all-accounts-monthly-file to yearly-files
+3. Generate analysis 
 
-
-### Step 1 - Get account-specific report files 
+### Step 1 Report Files Parsing - Breakdown
 ```mermaid
 graph LR
     A[report.csv] --> B[parser.py]
@@ -53,26 +18,20 @@ graph LR
     B -->|manual edit| D
 ```
 
-## Project Structure
+## Project Structure - Main Components
 
 - `src/main.py`
   - The entry point of the program
 - `src/parser/`
   - The entry point of the parsing stage
 - `src/parse_strategy/`
-  - Utilizing the Strategy Design Pattern to parse CSV/Excel/etc. files that're formatted differently for different accounts
-  - All strategy inherits from `parse_strategy_base.py`
+  - Utilizing the Strategy Design Pattern to parse files for different payment platforms
+  - All strategy classes inherit from `parse_strategy_base.py`
 - `src/categorizer/`
-  - The categorizers that determines the category of each cashflow entry using embedding vestor comparison
-
-# Testing
-
-Run from root directory:
-
-```
-pytest
-```
-
-Print stdout for all tests, including successful tests: `pytest -s`
-
-Print test names to terminal: `pytest -o log_cli=true`
+  - The categorizer that determines the category of each cashflow entry using embedding vectors comparison
+- `src/cleanser/`
+  - Helpful scripts to mark the entries with manually edited category as `category_resolver = "manual"` 
+- `src/combiner/`
+  - Combining account-specific files into the complete output CSV (including all accounts)
+- `src/analyzer/` (TODO)
+  - For analyzing the report, and visualizing the aggregated data

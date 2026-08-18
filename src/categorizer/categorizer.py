@@ -39,14 +39,18 @@ class Categorizer():
             # tokenizer_kwargs={"padding_side": "left"},
         )
 
-    def _build_category_reference_index(self, account_dir_name: str) -> tuple[pd.DataFrame, np.ndarray]:
+    def _build_category_reference_index(self, account_dir_name: str) -> tuple[pd.DataFrame, np.ndarray] | None:
         """
         Load a labeled reference set in a CSV and encode it.
         The reference CSV must have columns: Description, Category
         """
-        ref_data_dir = Path(FileConfig.CATEGORY_REFERENCE_DATA_DIR) / account_dir_name
-        reference_files = list(ref_data_dir.glob("*.csv"))
-        logger.info(f"Building reference index from {len(reference_files)} files in {ref_data_dir}")
+        reference_data_dir = Path(FileConfig.CATEGORY_REFERENCE_DATA_DIR) / account_dir_name
+        reference_files = list(reference_data_dir.glob("*.csv"))
+        if not reference_files:
+            logger.warning(f"No reference CSV files found in {reference_data_dir}")
+            return None
+
+        logger.info(f"Building reference index from {len(reference_files)} files in {reference_data_dir}")
 
         reference_df = pd.concat([pd.read_csv(file) for file in reference_files], ignore_index=True)
         descriptions = reference_df[Column.DESCRIPTION.value].tolist()
@@ -120,7 +124,7 @@ class Categorizer():
             FileConfig.CATEGORIZED_DATA_DIR)
         return categorized_file
 
-    def categorize_file(self, file_path: Path | str, ref_df: pd.DataFrame, ref_embeddings) -> pd.DataFrame:
+    def _categorize_file(self, file_path: Path | str, ref_df: pd.DataFrame, ref_embeddings: np.ndarray) -> pd.DataFrame:
         """
         Reads reference data, and matches the description of uncategorized entries to the
         reference data based on embedding similarity to categorize the uncategorized entries.
@@ -142,23 +146,31 @@ class Categorizer():
 
         df = self._apply_embeddings(df, ref_df, ref_embeddings)
 
-        # Write categorized result to file
-        categorized_file = self._map_standardized_file_to_categorized_file(file_path)
-        categorized_file.parent.mkdir(parents=True, exist_ok=True)
-        df.to_csv(categorized_file, index=False, encoding="utf-8", mode="w")
-
         return df
 
-    def categorize_all_standardized_files(
+    def process_all_standardized_files(
         self,
         standardized_file_dir: str = FileConfig.STANDARDIZED_DATA_DIR,
-        accounts: Iterable[Account | str] = ALL_ACTIVE_ACCOUNTS
+        accounts: Iterable[Account | str] = ALL_ACTIVE_ACCOUNTS,
+        skip_categorization_if_missing_reference: bool = False
     ) -> None:
         for account in accounts:
-            ref_df, ref_embeddings = self._build_category_reference_index(account.dir_name)
+            reference = self._build_category_reference_index(account.dir_name)
+
+            if not reference and skip_categorization_if_missing_reference:
+                logger.warning(f"No reference for account {account}, skipping categorization.")
+                continue
+
             # TODO(CG3): save the reference embeddings to a file so that we don't have to re-encode every time
 
             standardized_dir = Path(standardized_file_dir) / account.dir_name
-            standardized_files = standardized_dir.rglob("*.csv")
-            for standardized_file in standardized_files:
-                self.categorize_file(standardized_file, ref_df, ref_embeddings)
+            standardized_file_paths = standardized_dir.rglob("*.csv")
+            for standardized_file_path in standardized_file_paths:
+                df = self._categorize_file(standardized_file_path, reference[0], reference[1]) \
+                    if reference \
+                    else pd.read_csv(standardized_file_path, keep_default_na=False)
+
+                # Write categorized result to file
+                categorized_file_path = self._map_standardized_file_to_categorized_file(standardized_file_path)
+                categorized_file_path.parent.mkdir(parents=True, exist_ok=True)
+                df.to_csv(categorized_file_path, index=False, encoding="utf-8", mode="w")
