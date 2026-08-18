@@ -14,20 +14,13 @@ jobs:
     - name: Check out repository code
       uses: actions/checkout@v4
 
-    - name: List Directory Files
-      run: ls -la
-
-    - name: Set up Python
-      uses: actions/setup-python@v5
+    - name: Install uv
+      uses: astral-sh/setup-uv@v5
       with:
-        python-version: '3.12'
+        enable-cache: true
 
     - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install pytest
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      run: uv sync --frozen  # ignores the pyproject.toml, purely dependent on uv.lock file as the absolute source of truth
 
     - name: Run tests
-      run: |
-        pytest tests/
+      run: uv run pytest tests/
