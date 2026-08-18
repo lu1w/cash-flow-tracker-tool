@@ -17,7 +17,11 @@ class FileConfig:
     INPUT_DATA_DIR = os.getenv("INPUT_DATA_DIR", ".data/input")
     STANDARDIZED_DATA_DIR = os.getenv("STANDARDIZED_DATA_DIR", ".data/standardized")
     CATEGORIZED_DATA_DIR = os.getenv("CATEGORIZED_DATA_DIR", ".data/categorized")
+
     OUTPUT_DATA_DIR = os.getenv("OUTPUT_DATA_DIR", ".data/output")
+    OUTPUT_DATA_MONTHLY_DIR = os.getenv("OUTPUT_DATA_DIR", ".data/output") + "/monthly"
+    OUTPUT_DATA_YEARLY_DIR = os.getenv("OUTPUT_DATA_DIR", ".data/output") + "/yearly"
+
     OUTPUT_SNAPSHOTS_DIR = os.getenv("OUTPUT_SNAPSHOTS_DIR", ".data/output-snapshots")
 
     CATEGORY_REFERENCE_DATA_DIR = os.getenv("CATEGORY_REFERENCE_DATA_DIR", ".data/category-reference")

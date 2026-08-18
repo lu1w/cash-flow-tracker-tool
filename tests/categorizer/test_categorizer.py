@@ -35,8 +35,8 @@ def test__map_standardized_file_to_categorized_file(
     assert str(result).endswith(data_file_standardized_data_no_category_csv.name)
 
 
-def test_categorize_all_standardized_files(categorizer: Categorizer, data_file_standardized_data_no_category_csv: Path):
-    categorizer.categorize_all_standardized_files(accounts=(TEST_ACCOUNT,))
+def test_process_all_standardized_files(categorizer: Categorizer, data_file_standardized_data_no_category_csv: Path):
+    categorizer.process_all_standardized_files(accounts=(TEST_ACCOUNT,))
 
     # Validate result
     input_df = pd.read_csv(data_file_standardized_data_no_category_csv)

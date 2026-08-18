@@ -62,7 +62,7 @@ ALIPAY_OUTFLOW_CATEGORY_MAPPING: Dict[str, Callable[[Series], str]] = {
     "生活服务": lambda _: CategoryOutflow.LIVING.name,
     "餐饮美食": lambda _: CategoryOutflow.FOOD.name,
     "酒店旅游": lambda _: CategoryOutflow.HOUSING.name,
-    "教育培训": lambda _: CategoryOutflow.EDUCATION.name,
+    "教育培训": lambda _: CategoryOutflow.PERSONAL_GROWTH.name,
     "运动户外": lambda _: CategoryOutflow.FITNESS.name,
     "服饰装扮": lambda _: CategoryOutflow.CLOTHING_AND_ACCESSORIES.name,
     "美容美发": lambda _: CategoryOutflow.BEAUTY.name,
