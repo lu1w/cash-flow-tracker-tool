@@ -20,7 +20,7 @@ jobs:
         enable-cache: true
 
     - name: Install dependencies
-      run: uv sync --frozen  # ignores the pyproject.toml, purely dependent on uv.lock file as the absolute source of truth
+      run: uv sync --locked  # if pyproject.toml and uv.lock mismatch, exit with error
 
     - name: Run tests
       run: uv run pytest tests/
