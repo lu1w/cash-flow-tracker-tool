@@ -32,6 +32,7 @@ dependencies = [
     "narwhals==2.24.0",
     "networkx==3.6.1",
     "numpy==2.4.3",
+    "openai>=3.19.2",
     "openpyxl==3.1.5",
     "packaging==26.2",
     "pandas==3.0.1",
