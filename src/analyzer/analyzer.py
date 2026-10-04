@@ -8,7 +8,7 @@ from itertools import chain
 
 project_root = str(Path(__file__).parent.parent.parent)
 sys.path.append(project_root)
-from src.analyzer.analyzer_display import THEME_COLOURS
+from src.analyzer.analyzer_ui import THEME_COLOURS
 from src.config.config import FileConfig
 from src.enum.category import Category, CategoryOutflow, CategoryInflow
 from src.enum.column import Column

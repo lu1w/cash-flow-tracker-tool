@@ -1,5 +1,4 @@
 [project]
-# The directory containing pyproject.toml automatically becomes the absolute $PROJECT_ROOT
 name = "cash-flow-tracker-tool"
 version = "0.1.0"
 description = "A tool for cashflow report analysis"

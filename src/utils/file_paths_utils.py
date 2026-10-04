@@ -6,8 +6,6 @@ def map_file_path(source_file_path: Path, source_dir: str, destination_dir: str)
     :param source_file_path: the original file path that needs to be mapped to a file under `destination_dir`
     :param source_dir: value from FileConfig
     :param destination_dir: value from FileConfig
-    :return the
-
     """
     source_dir_path = Path(source_dir)
     destination_dir_path = Path(destination_dir)
