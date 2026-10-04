@@ -1,6 +1,5 @@
 import sys
 import os
-import traceback
 from pathlib import Path
 import pandas as pd
 from pandas import DataFrame, Series
@@ -56,13 +55,13 @@ class Parser:
 
         input_data_dir_path = self.parse_strategy.get_input_data_dir_path()
         pattern = f"[!_]*.{self.parse_strategy.file_extension}"
-        data_files_path = list(input_data_dir_path.glob(pattern=pattern))
+        data_file_paths = list(input_data_dir_path.glob(pattern=pattern))
 
         logger.info(
             f"Start parsing files with pattern {pattern} in {os.getcwd()}/{input_data_dir_path}: \n"
-            + f"{'\n'.join(['- ' + str(file_path) for file_path in data_files_path])}")
+            + f"{'\n'.join(['- ' + str(file_path) for file_path in data_file_paths])}")
 
-        for file_path in data_files_path:
+        for file_path in data_file_paths:
             self._process_file(file_path)
 
         # TODO: combine multiple accounts together
