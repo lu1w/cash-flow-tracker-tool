@@ -8,10 +8,10 @@ if __name__ == "__main__":
     project_root = str(Path(__file__).parent.parent.parent)
     sys.path.append(project_root)
 
-from src.config.config import OpenRouterConfig
+from src.config.config import AIConfig
 
-OPENROUTER_BASE_URL = OpenRouterConfig.OPENROUTER_BASE_URL
-OPENROUTER_API_KEY = OpenRouterConfig.OPENROUTER_API_KEY
+OPENROUTER_BASE_URL = AIConfig.OPENROUTER_BASE_URL
+OPENROUTER_API_KEY = AIConfig.OPENROUTER_API_KEY
 OPENROUTER_MODEL_ID = "google/gemma-4-26b-a4b-it:free"
 
 

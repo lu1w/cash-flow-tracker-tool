@@ -4,7 +4,7 @@ To run this test:
 """
 from pathlib import Path
 
-from src.config.config import FileConfig, OpenRouterConfig
+from src.config.config import FileConfig, AIConfig
 
 
 def test_file_config_uses_test_env_paths(project_root: Path):
@@ -25,5 +25,5 @@ def test_file_config_uses_test_env_paths(project_root: Path):
 
 
 def test_openrouter_config_uses_test_credentials():
-    assert OpenRouterConfig.OPENROUTER_API_KEY == "test-key-not-used"
-    assert OpenRouterConfig.OPENROUTER_BASE_URL == "https://openrouter.ai/api/v1"
+    assert AIConfig.OPENROUTER_API_KEY == "test-key"
+    assert AIConfig.OPENROUTER_BASE_URL == "https://openrouter.ai/api/v1"

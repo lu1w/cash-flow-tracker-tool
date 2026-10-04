@@ -8,10 +8,11 @@ if __name__ == "__main__":
     sys.path.append(project_root)
 
 from src.utils.logger import logger
+from src.config.config import AIConfig
 
-OLLAMA_BASE_URL = "http://localhost:11434/v1"
-OLLAMA_API_KEY = "ollama"  # An arbitrary string - connecting to locally running LLM doesn't need real authentication
-LLAMA_MODEL = "llama3.2:1b"
+OLLAMA_BASE_URL = AIConfig.OLLAMA_BASE_URL
+OLLAMA_API_KEY = AIConfig.OLLAMA_API_KEY
+OLLAMA_MODEL = AIConfig.OLLAMA_MODEL
 
 
 class OllamaClient:
@@ -27,16 +28,16 @@ class OllamaClient:
                 }
             ]
             response = self.client.chat.completions.create(
-                model=LLAMA_MODEL,
+                model=OLLAMA_MODEL,
                 messages=ping_messages,
                 max_tokens=5,
                 temperature=0
             )
             content = response.choices[0].message.content
-            logger.info(f"Success! Model responded: {content}")
+            logger.info(f"Pong! Model responded: {content}")
             return True
         except Exception as e:
-            logger.warning(f"Failed to ping LLM: {type(e).__name__}: {e}")
+            logger.exception(f"Failed to ping Ollama {OLLAMA_MODEL}: {e}")
             return False
 
 
