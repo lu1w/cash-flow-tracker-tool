@@ -1,15 +1,16 @@
-from enum import Enum, auto
+from enum import Enum, StrEnum, auto
 
 
-class Category(Enum):
+class Category(StrEnum):
     @property
-    def name(self):
+    def value(self):  # NOTE: pydantic model matches enum by value by default, thus using the .value as the reference
         name = self._name_.replace('_AND_', '_&_')
         return ' '.join(name.title().split('_'))
+    pass
 
 
 class CategoryInflow(Category):
-    UNKNOWN = 0
+    UNKNOWN = auto()
     TRANSACTION = auto()
     SALARY = auto()
     GIFT = auto()
@@ -20,7 +21,7 @@ class CategoryInflow(Category):
 
 
 class CategoryOutflow(Category):
-    UNKNOWN = 0
+    UNKNOWN = auto()
 
     TRANSACTION = auto()
 
@@ -57,6 +58,7 @@ if __name__ == "__main__":
     print(CategoryOutflow.UNKNOWN)
     print(repr(CategoryOutflow.TAX))
     print(CategoryOutflow.TAX)
+    print(CategoryOutflow.CLOTHING_AND_ACCESSORIES)
     print(CategoryOutflow.ENTERTAINMENT.name)
     print(CategoryOutflow.CLOTHING_AND_ACCESSORIES.name)
-    print(CategoryOutflow.GOVERNMENT_SERVICE.name)
+    print(CategoryOutflow.GOVERNMENT_SERVICE.value)

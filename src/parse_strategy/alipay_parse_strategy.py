@@ -40,6 +40,7 @@ class AlipayColumn(Enum):
         self.column_name = column_name
         self.is_useful = is_useful
 
+    @staticmethod
     def get_unuseful_columns() -> List[str]:
         return [column.column_name for column in AlipayColumn if not column.is_useful]
 
@@ -51,28 +52,28 @@ ALIPAY_CASHFLOW_DIRECTION: Dict[str, CashflowDirection] = {
 }
 
 ALIPAY_INFLOW_CATEGORY_MAPPING: Dict[str, Callable[[Series], str]] = {
-    "退款": lambda _: CategoryInflow.REFUND.name,
-    "转账红包": lambda row: CategoryInflow.TRANSACTION.name if row[AlipayColumn.ITEM_DETAIL.column_name] == "转账" else CategoryInflow.GIFT.name
+    "退款": lambda _: CategoryInflow.REFUND.value,
+    "转账红包": lambda row: CategoryInflow.TRANSACTION.value if row[AlipayColumn.ITEM_DETAIL.column_name] == "转账" else CategoryInflow.GIFT.value
 }
 
 ALIPAY_OUTFLOW_CATEGORY_MAPPING: Dict[str, Callable[[Series], str]] = {
-    "交通出行": lambda _: CategoryOutflow.TRANSPORTATION.name,
-    "日用百货": lambda _: CategoryOutflow.LIVING.name,
-    "家居家装": lambda _: CategoryOutflow.LIVING.name,
-    "生活服务": lambda _: CategoryOutflow.LIVING.name,
-    "餐饮美食": lambda _: CategoryOutflow.FOOD.name,
-    "酒店旅游": lambda _: CategoryOutflow.HOUSING.name,
-    "教育培训": lambda _: CategoryOutflow.PERSONAL_GROWTH.name,
-    "运动户外": lambda _: CategoryOutflow.FITNESS.name,
-    "服饰装扮": lambda _: CategoryOutflow.CLOTHING_AND_ACCESSORIES.name,
-    "美容美发": lambda _: CategoryOutflow.BEAUTY.name,
-    "数码电器": lambda _: CategoryOutflow.ELECTRONICS.name,
-    "充值缴费": lambda row: CategoryOutflow.TELECOMMUNICATION.name if row[AlipayColumn.COUNTERPARTY.column_name] == "中国移动" else CategoryOutflow.UNKNOWN.name,
-    "住房物业": lambda _: CategoryOutflow.UNKNOWN.name,
-    "医疗健康": lambda _: CategoryOutflow.UNKNOWN.name,
-    "文化休闲": lambda _: CategoryOutflow.UNKNOWN.name,
-    "商业服务": lambda _: CategoryOutflow.UNKNOWN.name,
-    "其他": lambda _: CategoryOutflow.UNKNOWN.name,
+    "交通出行": lambda _: CategoryOutflow.TRANSPORTATION.value,
+    "日用百货": lambda _: CategoryOutflow.LIVING.value,
+    "家居家装": lambda _: CategoryOutflow.LIVING.value,
+    "生活服务": lambda _: CategoryOutflow.LIVING.value,
+    "餐饮美食": lambda _: CategoryOutflow.FOOD.value,
+    "酒店旅游": lambda _: CategoryOutflow.HOUSING.value,
+    "教育培训": lambda _: CategoryOutflow.PERSONAL_GROWTH.value,
+    "运动户外": lambda _: CategoryOutflow.FITNESS.value,
+    "服饰装扮": lambda _: CategoryOutflow.CLOTHING_AND_ACCESSORIES.value,
+    "美容美发": lambda _: CategoryOutflow.BEAUTY.value,
+    "数码电器": lambda _: CategoryOutflow.ELECTRONICS.value,
+    "充值缴费": lambda row: CategoryOutflow.TELECOMMUNICATION.value if row[AlipayColumn.COUNTERPARTY.column_name] == "中国移动" else CategoryOutflow.UNKNOWN.value,
+    "住房物业": lambda _: CategoryOutflow.UNKNOWN.value,
+    "医疗健康": lambda _: CategoryOutflow.UNKNOWN.value,
+    "文化休闲": lambda _: CategoryOutflow.UNKNOWN.value,
+    "商业服务": lambda _: CategoryOutflow.UNKNOWN.value,
+    "其他": lambda _: CategoryOutflow.UNKNOWN.value,
 }
 
 
@@ -148,7 +149,7 @@ class AlipayParseStrategy(ParseStrategyBase):
         output_row[Column.CATEGORY_RAW.value] = row[AlipayColumn.CATEGORY.column_name]
 
         output_row[Column.CURRENCY.value] = cls.currency.name
-        output_row[Column.ACCOUNT.value] = cls.account.name
+        output_row[Column.ACCOUNT.value] = cls.account.value
 
         output_row[Column.CASHFLOW_DIRECTION.value] = cashflow_direction.text
         output_row[Column.AMOUNT_ABSOLUTE.value] = row[AlipayColumn.AMOUNT.column_name]

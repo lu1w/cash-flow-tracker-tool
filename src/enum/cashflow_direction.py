@@ -1,6 +1,7 @@
 
 from enum import Enum
 from pandas import Series
+from typing import override
 
 from src.utils.logger import logger
 
@@ -23,6 +24,16 @@ class CashflowDirection(Enum):
     # Handles: other * self (e.g., 3 * v)
     def __rmul__(self, scalar):
         return self.__mul__(scalar)
+
+    @override
+    @classmethod
+    def _missing_(cls, value: object):
+        """Allows lookup using just the text value or the coefficient."""
+        if isinstance(value, (str, int)):
+            for member in cls:
+                if value == member.value[0] or value == member.value[1]:
+                    return member
+        return super()._missing_(value)
 
     @classmethod
     def get_unknown(cls, row: Series):

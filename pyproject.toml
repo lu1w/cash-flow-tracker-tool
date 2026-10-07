@@ -66,3 +66,9 @@ dependencies = [
     "typing-inspection==0.4.2",
     "urllib3==2.7.0",
 ]
+
+[tool.pyright]
+extraPaths = ["."]
+
+[tool.mypy]
+mypy_path = "."

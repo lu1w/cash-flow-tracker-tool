@@ -1,0 +1,3 @@
+Date,Category,Category Confidence,Category Resolver,Raw Category,Currency,Account,Incoming(+)/Outgoing(-),Absolute Amount,Net Amount,Account Balance,Description,Remark,Is Aggregated,Refunded
+2025-11-30 14:13:32,Food,0.5367,embedding,商户消费,CNY,Wechat,Outgoing,3.0,-3.0,todo,深圳地铁,,,
+2025-11-30 20:29:33,Unknown,0.1,rules,餐饮美食,CNY,Alipay,(unknown),24.15,0.0,todo,奇亚籽子即食代餐,,,

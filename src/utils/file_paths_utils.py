@@ -12,11 +12,11 @@ def map_file_path(source_file_path: Path, source_dir: str, destination_dir: str)
 
     try:
         relative_path = source_file_path.relative_to(source_dir_path)
+        return destination_dir_path / relative_path
     except ValueError:
         source_path_str = str(source_file_path)
         if source_dir not in source_path_str:
             raise ValueError(
                 f"Source file path must be under {source_dir}, but has path {source_file_path}"
             )
-
-    return destination_dir_path / relative_path
+        raise

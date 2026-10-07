@@ -34,6 +34,7 @@ class HsbcColumn(Enum):
         self.column_name = column_name
         self.is_useful = is_useful
 
+    @staticmethod
     def get_unuseful_columns() -> List[str]:
         return [column.column_name for column in HsbcColumn if not column.is_useful]
 
@@ -65,9 +66,9 @@ class HsbcParseStrategy(ParseStrategyBase):
             else CashflowDirection.INFLOW
         net_amount = float(row[HsbcColumn.NET_AMOUNT.column_name].strip().replace(",", ""))
 
-        def derive_category(item_description: str) -> Category:
+        def derive_category(item_description: str) -> str:
             if cls.cash_rebase_keyword in item_description:
-                return CategoryInflow.CASH_REBATE.name
+                return CategoryInflow.CASH_REBATE.value
             return "Unknown"  # TODO(PL9): replace magic value
 
         # Populate output
@@ -84,7 +85,7 @@ class HsbcParseStrategy(ParseStrategyBase):
         output_row[Column.CATEGORY_RAW.value] = "--"
 
         output_row[Column.CURRENCY.value] = cls.currency.name
-        output_row[Column.ACCOUNT.value] = cls.account.name
+        output_row[Column.ACCOUNT.value] = cls.account.value
 
         output_row[Column.CASHFLOW_DIRECTION.value] = cashflow_direction.text
         output_row[Column.AMOUNT_ABSOLUTE.value] = abs(net_amount)

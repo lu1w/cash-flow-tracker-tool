@@ -1,0 +1,62 @@
+from datetime import datetime
+from decimal import Decimal
+from typing import Annotated
+from pydantic import BaseModel, ConfigDict, Field, model_validator
+
+from src.enum.account import Account
+from src.enum.cashflow_direction import CashflowDirection
+from src.enum.category import Category, CategoryOutflow, CategoryInflow
+from src.enum.category_resolver import CategoryResolver
+from src.enum.currency import Currency
+
+
+class TransactionEntryModel(BaseModel):
+    """Represents a cashflow entry after standardization."""
+
+    # Date
+    date: Annotated[datetime, Field(alias="Date")]
+
+    # Category columns
+    category: Annotated[CategoryInflow | CategoryOutflow, Field(alias="Category")]
+    category_confidence: Annotated[float, Field(alias="Category Confidence")]
+    category_resolver: Annotated[CategoryResolver, Field(alias="Category Resolver")]
+    category_raw: Annotated[str, Field(alias="Raw Category")]
+
+    # Monetary columns
+    currency: Annotated[Currency, Field(alias="Currency")]
+    cashflow_direction: Annotated[
+        CashflowDirection,
+        Field(alias=f"{CashflowDirection.INFLOW.text}(+)/{CashflowDirection.OUTFLOW.text}(-)")
+    ]
+    amount_absolute: Annotated[Decimal, Field(alias="Absolute Amount")]
+    amount_net: Annotated[Decimal, Field(alias="Net Amount")]
+    account: Annotated[Account, Field(alias="Account")]
+    # TODO(PL23): support account balance computation
+    # account_balance: Annotated[Decimal, Field(alias="Account Balance")]
+
+    # Notes/text columns (Optional)
+    remark: Annotated[str, Field(default="", alias="Remark")]
+    description: Annotated[str, Field(default="", alias="Description")]
+
+    # Boolean columns
+    is_aggregated: Annotated[bool, Field(default=False, alias="Is Aggregated")]
+    # Note how we pass the default inside Field(default=False)
+    is_refunded: Annotated[bool, Field(default=False, alias="Refunded")]
+
+    # =====
+
+    # display the enum typed fields with only the enum value, not a key-value pair of enum.name and enum.value
+    # https://www.prefect.io/blog/pydantic-enums-introduction
+    model_config = ConfigDict(use_enum_values=True)
+
+    class ConfigDict:
+        # allows instantiating Pydantic model using either the field's python variable name or its defined alias
+        populate_by_name = True
+
+    @model_validator(mode="before")
+    @classmethod
+    def strip_empty_strings(cls, values: dict) -> dict:
+        if isinstance(values, dict):
+            # Drops the key entirely if the value is an empty string, support default values to fill in
+            return {k: v for k, v in values.items() if v != ""}
+        return values

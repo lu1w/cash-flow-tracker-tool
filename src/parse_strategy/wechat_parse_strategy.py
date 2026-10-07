@@ -37,6 +37,7 @@ class WechatColumn(Enum):
         self.column_name = column_name
         self.is_useful = is_useful
 
+    @staticmethod
     def get_unuseful_columns() -> List[str]:
         return [column.column_name for column in WechatColumn if not column.is_useful]
 
@@ -79,13 +80,13 @@ class WechatParseStrategy(ParseStrategyBase):
         def derive_category() -> str:
             match row[WechatColumn.CASHFLOW_DIRECTION.column_name]:
                 case WechatCashflowDirection.INFLOW.value:
-                    return CategoryInflow.UNKNOWN.name
+                    return CategoryInflow.UNKNOWN.value
                 case WechatCashflowDirection.OUTFLOW.value:
                     if (
                         "滴滴出行" in row[WechatColumn.COUNTERPARTY.column_name]
                     ):
-                        return CategoryOutflow.TRANSPORTATION.name
-                    return CategoryOutflow.UNKNOWN.name
+                        return CategoryOutflow.TRANSPORTATION.value
+                    return CategoryOutflow.UNKNOWN.value
                 case _:
                     # raise Exception(f"Unknown cashflow direction: {row}")
                     return "Unknown"  # TODO(PL9): replace magic value
@@ -104,7 +105,7 @@ class WechatParseStrategy(ParseStrategyBase):
         output_row[Column.CATEGORY_RAW.value] = row[WechatColumn.CATEGORY.column_name]
 
         output_row[Column.CURRENCY.value] = cls.currency.name
-        output_row[Column.ACCOUNT.value] = cls.account.name
+        output_row[Column.ACCOUNT.value] = cls.account.value
 
         output_row[Column.CASHFLOW_DIRECTION.value] = cashflow_direction.text
         output_row[Column.AMOUNT_ABSOLUTE.value] = row[WechatColumn.AMOUNT.column_name]
@@ -138,7 +139,7 @@ class WechatRawParseStrategy(WechatParseStrategy):
     @classmethod
     def get_parsed_data_dir_path(cls) -> Path:
         from src.config.config import FileConfig
-        return Path(f"{FileConfig.INPUT_DATA_DIR}/.{str(cls.account.name).lower()}-csv")
+        return Path(f"{FileConfig.INPUT_DATA_DIR}/.{str(cls.account.value).lower()}-csv")
 
 
 if __name__ == "__main__":

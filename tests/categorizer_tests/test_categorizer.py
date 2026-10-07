@@ -1,6 +1,6 @@
 """
 To run the test in this file:
-    pytest tests/categorizer/test_categorizer.py
+    pytest tests/categorizer_tests/test_categorizer.py
 """
 import pandas as pd
 import pytest
