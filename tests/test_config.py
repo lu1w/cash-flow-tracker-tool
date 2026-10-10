@@ -10,14 +10,15 @@ from src.config.config import FileConfig, OpenRouterConfig
 def test_file_config_uses_test_env_paths(project_root: Path):
     assert FileConfig.INPUT_DATA_DIR == "tests/fixtures/input"
     assert FileConfig.STANDARDIZED_DATA_DIR == "tests/fixtures/standardized"
-    assert FileConfig.OUTPUT_DATA_DIR == "tests/fixtures/output"
+    # assert FileConfig.OUTPUT_DATA_DIR == "tests/fixtures/output"
+    assert FileConfig.OUTPUT_MONTHLY_DATA_DIR == "tests/fixtures/output/monthly"
     assert FileConfig.OUTPUT_SNAPSHOTS_DIR == "tests/fixtures/output-snapshots"
     assert FileConfig.CATEGORY_REFERENCE_DATA_DIR == "tests/fixtures/category-reference"
 
     for path_value in (
         FileConfig.INPUT_DATA_DIR,
         FileConfig.STANDARDIZED_DATA_DIR,
-        FileConfig.OUTPUT_DATA_DIR,
+        FileConfig.OUTPUT_MONTHLY_DATA_DIR,
         FileConfig.OUTPUT_SNAPSHOTS_DIR,
         FileConfig.CATEGORY_REFERENCE_DATA_DIR,
     ):

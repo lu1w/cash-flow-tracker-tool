@@ -1,9 +1,12 @@
 
+from decimal import Decimal
 from enum import Enum
 from pandas import Series
 from typing import override
 
 from src.utils.logger import logger
+
+# TODO(null): maybe change this to an IntEnum
 
 
 class CashflowDirection(Enum):
@@ -11,15 +14,22 @@ class CashflowDirection(Enum):
     INFLOW = ("Incoming", 1)
     OUTFLOW = ("Outgoing", -1)
 
-    def __init__(self, text: str, coefficient: int):
-        self.text = text
-        self.coefficient = coefficient
+    def __init__(self, display_name: str, multiplier: int):
+        self.display_name = display_name
+        self.multiplier = multiplier
+
+    def __str__(self):
+        return self.display_name
+
+    def __int__(self):
+        return self.multiplier
 
     # Handles: self * other
     def __mul__(self, scalar):
-        if isinstance(scalar, (int, float)):
-            return self.coefficient * scalar
-        raise TypeError(f"Input should be a numeric data type, but got {type(scalar)}")
+        supported_types = (int, Decimal)
+        if isinstance(scalar, supported_types):
+            return Decimal(self.multiplier * scalar)
+        raise TypeError(f"Input should be a type from {supported_types}, but got {type(scalar)}")
 
     # Handles: other * self (e.g., 3 * v)
     def __rmul__(self, scalar):
@@ -28,7 +38,7 @@ class CashflowDirection(Enum):
     @override
     @classmethod
     def _missing_(cls, value: object):
-        """Allows lookup using just the text value or the coefficient."""
+        """Allows lookup using just the display_text value or the multiplier."""
         if isinstance(value, (str, int)):
             for member in cls:
                 if value == member.value[0] or value == member.value[1]:
@@ -43,8 +53,8 @@ class CashflowDirection(Enum):
 
 if __name__ == "__main__":
     assert CashflowDirection.INFLOW.name == "INFLOW"
-    assert CashflowDirection.INFLOW.value == ("IN", 1)
-    assert CashflowDirection.INFLOW.text == "IN"
+    assert CashflowDirection.INFLOW.value == ("Inflow", 1)
+    assert CashflowDirection.INFLOW.display_name == "Inflow"
 
     assert CashflowDirection.INFLOW * 2 == 2
     assert CashflowDirection.OUTFLOW * 3 == -3

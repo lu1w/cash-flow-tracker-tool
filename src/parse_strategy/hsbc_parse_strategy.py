@@ -87,7 +87,7 @@ class HsbcParseStrategy(ParseStrategyBase):
         output_row[Column.CURRENCY.value] = cls.currency.name
         output_row[Column.ACCOUNT.value] = cls.account.value
 
-        output_row[Column.CASHFLOW_DIRECTION.value] = cashflow_direction.text
+        output_row[Column.CASHFLOW_DIRECTION.value] = cashflow_direction.display_name
         output_row[Column.AMOUNT_ABSOLUTE.value] = abs(net_amount)
         output_row[Column.AMOUNT_NET.value] = net_amount
 

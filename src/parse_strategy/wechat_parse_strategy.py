@@ -107,7 +107,7 @@ class WechatParseStrategy(ParseStrategyBase):
         output_row[Column.CURRENCY.value] = cls.currency.name
         output_row[Column.ACCOUNT.value] = cls.account.value
 
-        output_row[Column.CASHFLOW_DIRECTION.value] = cashflow_direction.text
+        output_row[Column.CASHFLOW_DIRECTION.value] = cashflow_direction.display_name
         output_row[Column.AMOUNT_ABSOLUTE.value] = row[WechatColumn.AMOUNT.column_name]
         output_row[Column.AMOUNT_NET.value] = cashflow_direction * row[WechatColumn.AMOUNT.column_name]
 

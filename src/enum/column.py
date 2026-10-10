@@ -24,7 +24,7 @@ class Column(StrEnum):
 
     # Monetary columns
     CURRENCY = "Currency"
-    CASHFLOW_DIRECTION = f"{CashflowDirection.INFLOW.text}(+)/{CashflowDirection.OUTFLOW.text}(-)"
+    CASHFLOW_DIRECTION = f"{CashflowDirection.INFLOW.display_name}(+)/{CashflowDirection.OUTFLOW.display_name}(-)"
     AMOUNT_ABSOLUTE = "Absolute Amount"
     AMOUNT_NET = "Net Amount"
     ACCOUNT = "Account"

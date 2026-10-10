@@ -26,28 +26,27 @@ class TransactionEntryModel(BaseModel):
     currency: Annotated[Currency, Field(alias="Currency")]
     cashflow_direction: Annotated[
         CashflowDirection,
-        Field(alias=f"{CashflowDirection.INFLOW.text}(+)/{CashflowDirection.OUTFLOW.text}(-)")
+        Field(alias=f"{CashflowDirection.INFLOW}(+)/{CashflowDirection.OUTFLOW}(-)")
     ]
     amount_absolute: Annotated[Decimal, Field(alias="Absolute Amount")]
     amount_net: Annotated[Decimal, Field(alias="Net Amount")]
     account: Annotated[Account, Field(alias="Account")]
-    # TODO(PL23): support account balance computation; uncomment the line below
-    # account_balance: Annotated[Decimal, Field(alias="Account Balance")]
+    # TODO(PL23): support account balance computation; populate the data for the line below
+    account_balance: Annotated[Decimal, Field(alias="Account Balance")] = Decimal(0)
 
     # Notes/text columns (Optional)
-    remark: Annotated[str, Field(default="", alias="Remark")]
-    description: Annotated[str, Field(default="", alias="Description")]
+    description: Annotated[str, Field(default="", alias="Description")]  # The context for LLM
+    remark: Annotated[str, Field(default="", alias="Remark")] = ""  # User's own notes
 
     # Boolean columns
-    is_aggregated: Annotated[bool, Field(default=False, alias="Is Aggregated")]
-    # Note how we pass the default inside Field(default=False)
-    is_refunded: Annotated[bool, Field(default=False, alias="Refunded")]
+    is_aggregated: Annotated[bool, Field(default=False, alias="Is Aggregated")] = False
+    refunded: Annotated[bool, Field(default=False, alias="Refunded")] = False
 
     # =====
 
-    # display the enum typed fields with only the enum value, not a key-value pair of enum.name and enum.value
-    # https://www.prefect.io/blog/pydantic-enums-introduction
-    model_config = ConfigDict(use_enum_values=True)
+    # `use_enum_values` display the enum typed fields with only the enum value, not a key-value pair of enum.name and enum.value https://www.prefect.io/blog/pydantic-enums-introduction
+    # `validate_by_name` allows model constructor __init__() to accept the field name instead of just the alias
+    model_config = ConfigDict(use_enum_values=True, validate_by_name=True)
 
     class ConfigDict:
         # allows instantiating Pydantic model using either the field's python variable name or its defined alias
