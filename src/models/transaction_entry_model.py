@@ -1,6 +1,6 @@
 from datetime import datetime
 from decimal import Decimal
-from typing import Annotated
+from typing import Annotated, Any
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from src.enum.account import Account
@@ -11,7 +11,7 @@ from src.enum.currency import Currency
 
 
 class TransactionEntryModel(BaseModel):
-    """Represents a cashflow entry after standardization."""
+    """Represents a standardized cashflow entry."""
 
     # Date
     date: Annotated[datetime, Field(alias="Date")]
@@ -31,7 +31,7 @@ class TransactionEntryModel(BaseModel):
     amount_absolute: Annotated[Decimal, Field(alias="Absolute Amount")]
     amount_net: Annotated[Decimal, Field(alias="Net Amount")]
     account: Annotated[Account, Field(alias="Account")]
-    # TODO(PL23): support account balance computation
+    # TODO(PL23): support account balance computation; uncomment the line below
     # account_balance: Annotated[Decimal, Field(alias="Account Balance")]
 
     # Notes/text columns (Optional)
@@ -53,9 +53,9 @@ class TransactionEntryModel(BaseModel):
         # allows instantiating Pydantic model using either the field's python variable name or its defined alias
         populate_by_name = True
 
-    @model_validator(mode="before")
+    @model_validator(mode="before")  # Runs before Pydantic’s internal parsing and validation
     @classmethod
-    def strip_empty_strings(cls, values: dict) -> dict:
+    def strip_empty_strings(cls, values: Any) -> Any:
         if isinstance(values, dict):
             # Drops the key entirely if the value is an empty string, support default values to fill in
             return {k: v for k, v in values.items() if v != ""}

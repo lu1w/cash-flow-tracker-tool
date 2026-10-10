@@ -17,7 +17,7 @@ TEST_ACCOUNT = Account.CASH_HKD
 
 
 @pytest.fixture
-def data_file_standardized_data_no_category_csv() -> Path:
+def data_file__standardized_data_no_category_csv() -> Path:
     return Path(f"{FileConfig.STANDARDIZED_DATA_DIR}/{TEST_ACCOUNT.dir_name}/standardized_data_no_category.csv")
 
 

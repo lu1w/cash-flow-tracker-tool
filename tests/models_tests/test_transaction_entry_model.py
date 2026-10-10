@@ -12,7 +12,7 @@ from src.utils.logger import debug_log
 
 
 @pytest.fixture
-def data_file_monthly_output_data_csv() -> Path:
+def data_file__monthly_output_data_csv() -> Path:
     return Path(f"{FileConfig.OUTPUT_DATA_MONTHLY_DIR}/output_data.csv")
 
 

@@ -1,11 +1,12 @@
 
 import sys
+import csv
 from enum import Enum
 from pathlib import Path
 
 import pandas as pd
 from pandas import DataFrame, Series
-from typing import List, Dict, Callable, override
+from typing import List, Dict, Callable, override, Any
 
 
 # Support import from project root
@@ -17,67 +18,14 @@ from src.enum.category_resolver import CategoryResolver
 from src.enum.category import Category, CategoryInflow, CategoryOutflow
 from src.enum.account import Account
 from src.enum.cashflow_direction import CashflowDirection
+from src.models.input_model import AlipayInputEntryModel
 from src.parse_strategy.parse_strategy_base import ParseStrategyBase
 from src.utils.logger import logger, debug_log
 
 
-class AlipayColumn(Enum):
-    # 交易时间,交易分类,交易对方,对方账号,商品说明,收/支,金额,收/付款方式,交易状态,交易订单号,商家订单号,备注,
-    DATE_TIME = ("交易时间", True)
-    CATEGORY = ("交易分类", True)
-    COUNTERPARTY = ("交易对方", True)
-    COUNTERPARTY_ACCOUNT = ("对方账号", False)
-    ITEM_DETAIL = ("商品说明", True)
-    CASHFLOW_DIRECTION = ("收/支", True)
-    AMOUNT = ("金额", True)
-    PAYMENT_METHOD = ("收/付款方式", False)
-    TRANSACTION_STATUS = ("交易状态", False)
-    TRANSACTION_NUMBER = ("交易订单号", False)
-    VENDOR_ORDER_NUMBER = ("商家订单号", False)
-    REMARK = ("备注", False)
+class AlipayParseStrategy():
+    """Parsing strategy for handling Alipay transaction history data."""
 
-    def __init__(self, column_name: str, is_useful: bool):
-        self.column_name = column_name
-        self.is_useful = is_useful
-
-    @staticmethod
-    def get_unuseful_columns() -> List[str]:
-        return [column.column_name for column in AlipayColumn if not column.is_useful]
-
-
-ALIPAY_CASHFLOW_DIRECTION: Dict[str, CashflowDirection] = {
-    "收入": CashflowDirection.INFLOW,
-    "支出": CashflowDirection.OUTFLOW,
-    "不计收支": CashflowDirection.UNKNOWN  # TODO: check why does this show up in the data
-}
-
-ALIPAY_INFLOW_CATEGORY_MAPPING: Dict[str, Callable[[Series], str]] = {
-    "退款": lambda _: CategoryInflow.REFUND.value,
-    "转账红包": lambda row: CategoryInflow.TRANSACTION.value if row[AlipayColumn.ITEM_DETAIL.column_name] == "转账" else CategoryInflow.GIFT.value
-}
-
-ALIPAY_OUTFLOW_CATEGORY_MAPPING: Dict[str, Callable[[Series], str]] = {
-    "交通出行": lambda _: CategoryOutflow.TRANSPORTATION.value,
-    "日用百货": lambda _: CategoryOutflow.LIVING.value,
-    "家居家装": lambda _: CategoryOutflow.LIVING.value,
-    "生活服务": lambda _: CategoryOutflow.LIVING.value,
-    "餐饮美食": lambda _: CategoryOutflow.FOOD.value,
-    "酒店旅游": lambda _: CategoryOutflow.HOUSING.value,
-    "教育培训": lambda _: CategoryOutflow.PERSONAL_GROWTH.value,
-    "运动户外": lambda _: CategoryOutflow.FITNESS.value,
-    "服饰装扮": lambda _: CategoryOutflow.CLOTHING_AND_ACCESSORIES.value,
-    "美容美发": lambda _: CategoryOutflow.BEAUTY.value,
-    "数码电器": lambda _: CategoryOutflow.ELECTRONICS.value,
-    "充值缴费": lambda row: CategoryOutflow.TELECOMMUNICATION.value if row[AlipayColumn.COUNTERPARTY.column_name] == "中国移动" else CategoryOutflow.UNKNOWN.value,
-    "住房物业": lambda _: CategoryOutflow.UNKNOWN.value,
-    "医疗健康": lambda _: CategoryOutflow.UNKNOWN.value,
-    "文化休闲": lambda _: CategoryOutflow.UNKNOWN.value,
-    "商业服务": lambda _: CategoryOutflow.UNKNOWN.value,
-    "其他": lambda _: CategoryOutflow.UNKNOWN.value,
-}
-
-
-class AlipayParseStrategy(ParseStrategyBase):
     account = Account.ALIPAY
     currency = Currency.CNY
     file_extension = "csv"
@@ -87,90 +35,68 @@ class AlipayParseStrategy(ParseStrategyBase):
 
     num_skip_rows = 23
 
-    @override
     @classmethod
-    def load_data(cls, file_path: Path) -> DataFrame:
-        columns_to_drop = AlipayColumn.get_unuseful_columns()
+    def load_data(cls, file_path: Path) -> List[Dict[str, Any]]:
+        columns_to_drop = set(AlipayInputEntryModel.get_ignored_columns())
+
         try:
-            data = pd.read_csv(
-                # GBK is a more comprehensive superset of the GB2312 standard,
-                # and it is often more compatible with a wider range of simplified Chinese characters
-                # you might encounter in modern files. If one encoding doesn't work, try the other.
-                file_path, skiprows=cls.num_skip_rows, encoding=cls.encoding
-            ).drop(columns_to_drop, axis=1)
+            data = cls._parse_csv(file_path, cls.encoding, columns_to_drop)
         except UnicodeDecodeError:
-            # If not gbk, use utf-8
+            # If the original encoding fails (e.g. GBK), fallback to utf-8
             cls.encoding = "utf-8"
-            data = pd.read_csv(
-                file_path,
-                skiprows=cls.num_skip_rows,
-                encoding=cls.encoding
-            ).drop(columns_to_drop, axis=1)
+            data = cls._parse_csv(file_path, cls.encoding, columns_to_drop)
 
-        logger.info(f"Data (encoding={cls.encoding}) loaded successfull from file {file_path}")
-
+        logger.info(f"Data (encoding={cls.encoding}) loaded successfully from file {file_path}")
         return data
 
-    @override
     @classmethod
-    def parse_row(cls, row: Series) -> Series:
-        cashflow_direction = ALIPAY_CASHFLOW_DIRECTION[row[AlipayColumn.CASHFLOW_DIRECTION.column_name]]
+    def _parse_csv(cls, file_path: Path, encoding: str, columns_to_drop: set = set()) -> List[Dict[str, Any]]:
+        with open(file_path, mode='r', encoding=encoding, newline='') as f:
+            # Skip the required number of rows manually
+            for _ in range(cls.num_skip_rows):
+                next(f, None)
 
-        def derive_category() -> Category:
-            category_column_name = AlipayColumn.CATEGORY.column_name
+            # Parse the remaining rows into a dictionary and strip any leading/trailing whitespaces
+            reader = csv.DictReader(f)
+            if reader.fieldnames:
+                reader.fieldnames = [field.strip() for field in reader.fieldnames]
 
-            def derive_to_unknown(row, default_category: Category):
-                logger.warning(f"Unknown Alipay category: \n{row}")
-                return default_category
+            # Build the list of rows, skipping unuseful columns
+            parsed_data = [
+                {k: v for k, v in row.items() if k not in columns_to_drop}
+                for row in reader
+            ]
+            return parsed_data
 
-            match cashflow_direction:
-                case CashflowDirection.INFLOW:
-                    return ALIPAY_INFLOW_CATEGORY_MAPPING.get(
-                        row[category_column_name],
-                        lambda row: derive_to_unknown(row, CategoryInflow.UNKNOWN.name)
-                    )(row)
-                case CashflowDirection.OUTFLOW:
-                    return ALIPAY_OUTFLOW_CATEGORY_MAPPING.get(
-                        row[category_column_name],
-                        lambda row: derive_to_unknown(row, CategoryOutflow.UNKNOWN.name)
-                    )(row)
-                case _:
-                    return "Unknown"  # TODO(PL9): remove magic value for unknown category
+    # @classmethod
+    # def parse(
+    #     cls,
+    #     row: Any,  # Your input row object / Pydantic model / dict
+    #     cashflow_direction: Any,  # Your cashflow direction helper object
+    #     derived_category: str,
+    #     currency_name: str,
+    #     account_value: str
+    # ) -> Any:
 
-        # Populate output
-        output_row: Series = Series([])
+    #     # Extract data using your original config safely
+    #     raw_amount = float(row[AlipayColumn.AMOUNT.column_name])
 
-        date: pd.Timestamp = pd.to_datetime(row[AlipayColumn.DATE_TIME.column_name])
-        output_row[Column.DATE.value] = date
+    #     # Assuming cashflow_direction behaves like a multiplier when multiplying numeric types
+    #     # (e.g. -1 for outbound, 1 for inbound)
+    #     net_multiplier = int(cashflow_direction)
 
-        output_row[Column.CATEGORY.value] = derive_category()
-        output_row[Column.CATEGORY_CONFIDENCE.value] = 0.1
-        output_row[Column.CATEGORY_RESOLVER.value] = CategoryResolver.RULES
-        output_row[Column.CATEGORY_RAW.value] = row[AlipayColumn.CATEGORY.column_name]
-
-        output_row[Column.CURRENCY.value] = cls.currency.name
-        output_row[Column.ACCOUNT.value] = cls.account.value
-
-        output_row[Column.CASHFLOW_DIRECTION.value] = cashflow_direction.text
-        output_row[Column.AMOUNT_ABSOLUTE.value] = row[AlipayColumn.AMOUNT.column_name]
-        output_row[Column.AMOUNT_NET.value] = cashflow_direction * row[AlipayColumn.AMOUNT.column_name]
-
-        output_row[Column.ACCOUNT_BALANCE.value] = "todo"
-        output_row[Column.DESCRIPTION.value] = row[AlipayColumn.ITEM_DETAIL.column_name]
-        output_row[Column.REMARK.value] = ""  # manual edit
-
-        # TODO: handle aggregation; if aggregated, should have recored split to single items,
-        # and the aggregated record should not be recorded in analysis
-        output_row[Column.IS_AGGREGATED.value] = "todo"
-        # TODO: think about how to show the refund item
-        # should not be row[AlipayColumn.CATEGORY.column_name] == cls.refund_category
-        output_row[Column.IS_REFUNDED.value] = "todo"
-
-        return output_row
-
-
-if __name__ == "__main__":
-    # from pprint import pprint
-    # pprint(AlipayParseStrategy.__dict__)
-
-    debug_log("Run from main.py to see the result")
+    #     return StandardizedRow(
+    #         date=pd.to_datetime(row[AlipayColumn.DATE_TIME.column_name]).to_pydatetime(),
+    #         category=derived_category,
+    #         category_confidence=0.1,
+    #         category_resolver=CategoryResolver.RULES.value,  # Extract the value/name from your Enum
+    #         category_raw=str(row[AlipayColumn.CATEGORY.column_name]),
+    #         currency=currency_name,
+    #         account=account_value,
+    #         cashflow_direction=cashflow_direction.text,
+    #         amount_absolute=raw_amount,
+    #         amount_net=net_multiplier * raw_amount,
+    #         description=str(row[AlipayColumn.ITEM_DETAIL.column_name]),
+    #         # Fields like account_balance, remark, is_aggregated, is_refunded
+    #         # fallback onto the model's empty string defaults automatically!
+    #     )

@@ -39,12 +39,12 @@ class ParseStrategyBase(ABC):
 
     @classmethod
     def get_input_data_dir_path(cls) -> Path:
-        return Path(f"{FileConfig.INPUT_DATA_DIR}/{str(cls.account.name).lower()}")
+        return Path(f"{FileConfig.INPUT_DATA_DIR}/{cls.account.dir_name}")
 
     @classmethod
     def get_parsed_data_dir_path(cls) -> Path:
         """Defines where the standardized file should be stored."""
-        return Path(f"{FileConfig.STANDARDIZED_DATA_DIR}/{str(cls.account.name).lower()}")
+        return Path(f"{FileConfig.STANDARDIZED_DATA_DIR}/{cls.account.dir_name}")
 
     @classmethod
     def ensure_standardized_data_dir_path(cls) -> Path:
@@ -53,7 +53,7 @@ class ParseStrategyBase(ABC):
         return standardized_dir_path
 
     @classmethod
-    def build_output_file_path(cls, date_key: str) -> str:
+    def build_output_file_path(cls, date_key: str) -> Path:
         # .data/standardized/.wechat/WECHAT(202602).csv
         return cls.ensure_standardized_data_dir_path() / f"{cls.account.name}({date_key}).csv"
 

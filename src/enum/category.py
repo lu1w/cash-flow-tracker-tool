@@ -55,10 +55,10 @@ class CategoryOutflow(Category):
 
 
 if __name__ == "__main__":
-    print(CategoryOutflow.UNKNOWN)
+    assert CategoryOutflow.UNKNOWN == "unknown"
     print(repr(CategoryOutflow.TAX))
-    print(CategoryOutflow.TAX)
-    print(CategoryOutflow.CLOTHING_AND_ACCESSORIES)
-    print(CategoryOutflow.ENTERTAINMENT.name)
-    print(CategoryOutflow.CLOTHING_AND_ACCESSORIES.name)
-    print(CategoryOutflow.GOVERNMENT_SERVICE.value)
+    assert CategoryOutflow.TAX == "tax"
+    assert CategoryOutflow.CLOTHING_AND_ACCESSORIES == "clothing_and_accessories"
+    assert CategoryOutflow.ENTERTAINMENT.name == "ENTERTAINMENT"
+    assert CategoryOutflow.CLOTHING_AND_ACCESSORIES.name == "CLOTHING_AND_ACCESSORIES"
+    assert CategoryOutflow.GOVERNMENT_SERVICE.value == "Government Service"
