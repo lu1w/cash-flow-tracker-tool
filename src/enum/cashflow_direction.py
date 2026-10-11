@@ -18,6 +18,10 @@ class CashflowDirection(Enum):
         self.display_name = display_name
         self.multiplier = multiplier
 
+    @property
+    def value(self):
+        return str(self)
+
     def __str__(self):
         return self.display_name
 

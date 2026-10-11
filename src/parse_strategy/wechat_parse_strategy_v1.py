@@ -8,7 +8,7 @@ from typing import List, Dict, override
 # Support import from project root
 project_root = str(Path(__file__).parent.parent.parent)
 sys.path.append(project_root)
-from src.parse_strategy.parse_strategy_base import ParseStrategyBase
+from src.parse_strategy.parse_strategy_base_v1 import ParseStrategyBase
 from src.utils.logger import logger, debug_log
 from src.enum.account import Account
 from src.enum.cashflow_direction import CashflowDirection

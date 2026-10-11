@@ -13,8 +13,8 @@ from src.enum.category_resolver import CategoryResolver
 
 
 @pytest.mark.unit
-def test_load_data_models__should_load_all_rows(data_file__alipay_input_data):
-    data_models = AlipayParseStrategy.load_data_models(data_file__alipay_input_data)
+def test_load_data__should_load_all_rows(data_file__alipay_input_data):
+    data_models = AlipayParseStrategy.load_data(data_file__alipay_input_data)
     assert len(data_models) == 12
 
 

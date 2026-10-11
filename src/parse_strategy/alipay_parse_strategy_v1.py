@@ -17,7 +17,7 @@ from src.enum.category_resolver import CategoryResolver
 from src.enum.category import Category, CategoryInflow, CategoryOutflow
 from src.enum.account import Account
 from src.enum.cashflow_direction import CashflowDirection
-from src.parse_strategy.parse_strategy_base import ParseStrategyBase
+from src.parse_strategy.parse_strategy_base_v1 import ParseStrategyBase
 from src.utils.logger import logger, debug_log
 
 

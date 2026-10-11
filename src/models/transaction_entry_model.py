@@ -39,8 +39,8 @@ class TransactionEntryModel(BaseModel):
     remark: Annotated[str, Field(default="", alias="Remark")] = ""  # User's own notes
 
     # Boolean columns
-    is_aggregated: Annotated[bool, Field(default=False, alias="Is Aggregated")] = False
-    refunded: Annotated[bool, Field(default=False, alias="Refunded")] = False
+    is_aggregated: Annotated[bool | None, Field(default=None, alias="Is Aggregated")] = None
+    refunded: Annotated[bool | None, Field(default=None, alias="Refunded")] = None
 
     # =====
 

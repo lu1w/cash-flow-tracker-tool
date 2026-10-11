@@ -10,6 +10,8 @@ from pydantic import BaseModel, Field, field_validator
 from src.utils.logger import logger
 from src.enum.cashflow_direction import CashflowDirection
 
+type InputModel = AlipayInputEntryModel
+
 
 def clean_amount(value: str | Decimal) -> Decimal:
     """Cleanser for dollar amount records. Value will be a `str` if reading from files, be can be `Decimal` is passed in via the model's Python Constructor."""

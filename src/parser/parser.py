@@ -1,23 +1,22 @@
 import sys
 import os
+import csv
 from pathlib import Path
 import pandas as pd
 from pandas import DataFrame, Series
-from typing import Dict
+from typing import Dict, List
 
 # Support import from project root
 project_root = str(Path(__file__).parent.parent.parent)
 sys.path.append(project_root)
 from src.parse_strategy.parse_strategy_base import ParseStrategyBase
+from src.models.input_model import InputModel
+from src.models.transaction_entry_model import TransactionEntryModel
 from src.utils.logger import logger, debug_log
 from src.enum.column import Column
 
 
 class Parser:
-    monthly_cashflow: Dict[str, DataFrame] = {}
-
-    require_data_type_validation = True
-
     def __init__(self, parse_strategy: ParseStrategyBase):
         self.parse_strategy = parse_strategy
 
@@ -25,26 +24,44 @@ class Parser:
         try:
             # Load data
             logger.info(f"Start loading data for file `{file_path}`")
-            data: DataFrame = self.parse_strategy.load_data(file_path)
+            data_entries: List[InputModel] = self.parse_strategy.load_data(file_path)
 
             logger.info(f"Data loaded, start parsing file `{file_path}`")
 
             # Parse data
-            parsed_data: DataFrame = data.apply(self.parse_strategy.parse_row, axis=1, result_type='reduce')
-            if self.parse_strategy.require_data_type_validation:
-                Column.verify_columns_data_type(parsed_data)
+            parsed_data_entries: List[TransactionEntryModel] = [self.parse_strategy.parse_entry(entry)
+                                                                for entry in data_entries]
 
             # Group data based on the year and month
-            self.monthly_cashflow: Dict[str, DataFrame] = {
-                f"{year:4}-{month:02}": row
-                for (year, month), row
-                in parsed_data.groupby([parsed_data['Date'].dt.year, parsed_data['Date'].dt.month])
-            }
+            monthly_cashflows: Dict[str, list[TransactionEntryModel]] = {}
+            for entry in parsed_data_entries:
+                year_month_key = f"{entry.date.year:4}-{entry.date.month:02}"
+                if year_month_key in monthly_cashflows:
+                    monthly_cashflows[year_month_key].append(entry)
+                else:
+                    monthly_cashflows[year_month_key] = [entry]
 
-            # Writ data to monthly file
-            for year_month, df in self.monthly_cashflow.items():
-                df.to_csv(self.parse_strategy.build_output_file_path(year_month),
-                          index=False, encoding="utf-8", mode="w")
+            # Writ data to monthly fileentry
+            fieldnames = [
+                # potentialy cleaner version: model_json_schema()['properties'] extracts the aliases automatically
+                # fieldnames = list(UserProfile.model_json_schema(by_alias=True)["properties"].keys())
+                field.alias or name
+                for name, field in TransactionEntryModel.model_fields.items()
+            ]
+            for year_month, entries in monthly_cashflows.items():
+                monthly_file = self.parse_strategy.build_output_file_path(year_month)
+                logger.info(f"Writing {len(entries)} entries to {monthly_file}")
+                with open(monthly_file, mode="w", newline="", encoding="utf-8") as file:
+                    writer = csv.DictWriter(file, fieldnames=fieldnames)
+
+                    # Write the header row (id, name, price, is_available)
+                    writer.writeheader()
+
+                    # Write the rows
+                    for entry in entries:
+                        # .model_dump() converts the Pydantic object into a clean Python dict
+                        writer.writerow(entry.model_dump(by_alias=True))
+                break  # TODO(this) remove this after testing
 
             logger.info(f"Successfully generated monthly reports from file `{file_path}`")
         except Exception as e:

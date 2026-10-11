@@ -63,7 +63,7 @@ def temp_output_dir(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
 
 
 def _load_alipay_input_data_models(file_path: Path) -> List[AlipayInputEntryModel]:
-    return AlipayParseStrategy.load_data_models(file_path)
+    return AlipayParseStrategy.load_data(file_path)
 
 
 @pytest.fixture(scope="session")

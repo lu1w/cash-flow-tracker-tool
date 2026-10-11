@@ -24,7 +24,7 @@ from src.parse_strategy.parse_strategy_base import ParseStrategyBase
 from src.utils.logger import logger, debug_log
 
 
-class AlipayParseStrategy():
+class AlipayParseStrategy(ParseStrategyBase):
     """Parsing strategy for handling Alipay transaction history data."""
 
     account = Account.ALIPAY
@@ -67,8 +67,9 @@ class AlipayParseStrategy():
         "其他": lambda _: CategoryOutflow.UNKNOWN,
     }
 
+    @override
     @classmethod
-    def load_data_models(cls, file_path: Path) -> List[AlipayInputEntryModel]:
+    def load_data(cls, file_path: Path) -> List[AlipayInputEntryModel]:
         return [AlipayInputEntryModel.model_validate(row)
                 for row in cls._load_data_rows(file_path)]
 
@@ -105,6 +106,7 @@ class AlipayParseStrategy():
             ]
             return parsed_data
 
+    @override
     @classmethod
     def parse_entry(
         cls,
@@ -142,17 +144,16 @@ class AlipayParseStrategy():
 
         return TransactionEntryModel(
             date=input_entry_model.date_time,
-            # pd.to_datetime(row[AlipayColumn.DATE_TIME.column_name]).to_pydatetime(),
             category=derive_category(),
             category_confidence=0.1,
             category_resolver=CategoryResolver.RULES,
-            category_raw=input_entry_model.category,  # str(row[AlipayColumn.CATEGORY.column_name]),
+            category_raw=input_entry_model.category,
             currency=cls.currency,
             account=cls.account,
             cashflow_direction=cashflow_direction,
             amount_absolute=raw_amount,
             amount_net=cashflow_direction * raw_amount,
-            description=input_entry_model.item_detail,  # str(row[AlipayColumn.ITEM_DETAIL.column_name]),
+            description=input_entry_model.item_detail,
             # Fields like account_balance, remark, is_aggregated, is_refunded
             # fallback onto the model's empty string defaults automatically!
         )

@@ -11,8 +11,8 @@ from src.categorizer.categorizer import Categorizer
 from src.combiner.combiner import merge_by_month
 from src.parser.parser import Parser
 from src.parse_strategy.alipay_parse_strategy import AlipayParseStrategy
-from src.parse_strategy.hsbc_parse_strategy import HsbcParseStrategy
-from src.parse_strategy.wechat_parse_strategy import WechatParseStrategy, WechatRawParseStrategy
+# from src.parse_strategy.hsbc_parse_strategy import HsbcParseStrategy
+# from src.parse_strategy.wechat_parse_strategy import WechatParseStrategy, WechatRawParseStrategy
 from src.utils.logger import logger
 
 
@@ -22,12 +22,14 @@ def main():
     # 1. parse files
     for strategy in [
         AlipayParseStrategy,
-        WechatParseStrategy,
-        HsbcParseStrategy,
-        WechatRawParseStrategy
+        # WechatParseStrategy,
+        # HsbcParseStrategy,
+        # WechatRawParseStrategy
     ]:
         parser = Parser(strategy)
         parser.execute()
+
+    exit()
 
     categorizer = Categorizer()
     from src.enum.account import Account

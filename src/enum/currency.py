@@ -171,6 +171,10 @@ class Currency(Enum):
     ZMW = 165  # Zambian Kwacha
     ZWL = 166  # Zimbabwe Dollar
 
+    @property
+    def value(self):
+        return self.name
+
     @override
     @classmethod
     def _missing_(cls, value: object):
