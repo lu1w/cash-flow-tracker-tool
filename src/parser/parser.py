@@ -9,9 +9,11 @@ from typing import Dict, List
 # Support import from project root
 project_root = str(Path(__file__).parent.parent.parent)
 sys.path.append(project_root)
+from src.config.config import ParserConfig
 from src.parse_strategy.parse_strategy_base import ParseStrategyBase
 from src.models.input_model import InputModel
 from src.models.transaction_entry_model import TransactionEntryModel
+from src.utils.file_util import get_year_month_key
 from src.utils.logger import logger, debug_log
 from src.enum.column import Column
 
@@ -35,7 +37,7 @@ class Parser:
             # Group data based on the year and month
             monthly_cashflows: Dict[str, list[TransactionEntryModel]] = {}
             for entry in parsed_data_entries:
-                year_month_key = f"{entry.date.year:4}-{entry.date.month:02}"
+                year_month_key = get_year_month_key(entry.date.year, entry.date.month)
                 if year_month_key in monthly_cashflows:
                     monthly_cashflows[year_month_key].append(entry)
                 else:
@@ -49,6 +51,9 @@ class Parser:
                 for name, field in TransactionEntryModel.model_fields.items()
             ]
             for year_month, entries in monthly_cashflows.items():
+                if not ParserConfig.is_allowed_year_month(year_month):
+                    continue
+
                 monthly_file = self.parse_strategy.build_output_file_path(year_month)
                 logger.info(f"Writing {len(entries)} entries to {monthly_file}")
                 with open(monthly_file, mode="w", newline="", encoding="utf-8") as file:
@@ -61,7 +66,6 @@ class Parser:
                     for entry in entries:
                         # .model_dump() converts the Pydantic object into a clean Python dict
                         writer.writerow(entry.model_dump(by_alias=True))
-                break  # TODO(this) remove this after testing
 
             logger.info(f"Successfully generated monthly reports from file `{file_path}`")
         except Exception as e:

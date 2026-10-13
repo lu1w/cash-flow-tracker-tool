@@ -23,6 +23,7 @@ class TransactionEntryModel(BaseModel):
     category_raw: Annotated[str, Field(alias="Raw Category")]
 
     # Monetary columns
+    account: Annotated[Account, Field(alias="Account")]
     currency: Annotated[Currency, Field(alias="Currency")]
     cashflow_direction: Annotated[
         CashflowDirection,
@@ -30,7 +31,6 @@ class TransactionEntryModel(BaseModel):
     ]
     amount_absolute: Annotated[Decimal, Field(alias="Absolute Amount")]
     amount_net: Annotated[Decimal, Field(alias="Net Amount")]
-    account: Annotated[Account, Field(alias="Account")]
     # TODO(PL23): support account balance computation; populate the data for the line below
     account_balance: Annotated[Decimal, Field(alias="Account Balance")] = Decimal(0)
 

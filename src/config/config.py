@@ -35,6 +35,17 @@ class LoggerConfig:
     FILE_LOGGER_MODE = os.getenv("FILE_LOGGER_MODE", "w")[0]  # a=append, w=write
 
 
+class ParserConfig:
+    # A list of strings in the format `2025-02`, reference to get_year_month_key() in file_util.py.
+    # Empty means all allowed.
+    ALLOWED_YEAR_MONTH: list[str] = ["2026-03"]
+
+    @staticmethod
+    def is_allowed_year_month(year_month) -> bool:
+        return not ParserConfig.ALLOWED_YEAR_MONTH \
+            or year_month in ParserConfig.ALLOWED_YEAR_MONTH
+
+
 if __name__ == "__main__":
     print(f"OPENROUTER_API_KEY = {OpenRouterConfig.OPENROUTER_API_KEY}")
     print(f"OPENROUTER_BASE_URL = {OpenRouterConfig.OPENROUTER_BASE_URL}")

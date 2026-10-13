@@ -132,7 +132,7 @@ class Categorizer():
         :param file_path: Path to the standardized data CSV file to be categorized. E.g. .data/standardized/.alipay/ALIPAY(202602).csv
         """
         if isinstance(file_path, str):
-            file_path: Path = Path(file_path)
+            file_path = Path(file_path)
 
         if isinstance(file_path, Path):
             # NOTE: We need keep_default_na to false, since nan is considered a float,

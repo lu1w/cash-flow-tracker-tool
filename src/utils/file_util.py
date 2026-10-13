@@ -20,3 +20,23 @@ def map_file_path(source_file_path: Path, source_dir: str, destination_dir: str)
                 f"Source file path must be under {source_dir}, but has path {source_file_path}"
             )
         raise
+
+
+def validate_year_month_key(maybe_year_month_key: str) -> bool:
+    from re import match
+    pattern = r"^(\d{4})-(\d{2})$"
+    if match(pattern, maybe_year_month_key):
+        return True
+    return False
+
+
+def get_year_month_key(year: str | int, month: str | int) -> str:
+    """Return year-month in the format `yyyy-mm` (e.g. `2026-09`)"""
+    year_month_key = f"{year:4}-{month:02}"
+
+    # Calling for validation here to keep the generation and the validation in sync
+    if not validate_year_month_key(year_month_key):
+        # TODO: maybe customize an error type
+        raise ValueError(f"Invalid year_month_key {year_month_key}")
+
+    return year_month_key
