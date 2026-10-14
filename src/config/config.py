@@ -36,7 +36,7 @@ class LoggerConfig:
 
 
 class ParserConfig:
-    # A list of strings in the format `2025-02`, reference to get_year_month_key() in file_util.py.
+    # A list of strings in the format `2025-02`, reference to get_year_month_key() in `file_util.py`.
     # Empty means all allowed.
     ALLOWED_YEAR_MONTH: list[str] = ["2026-03"]
 

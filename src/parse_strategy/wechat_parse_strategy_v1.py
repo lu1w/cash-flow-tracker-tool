@@ -127,6 +127,15 @@ class WechatParseStrategy(ParseStrategyBase):
 class WechatRawParseStrategy(WechatParseStrategy):
     require_data_type_validation = False
 
+    @override
+    @classmethod
+    def load_data(cls, file_path: Path) -> pd.DataFrame:
+        try:
+            data = pd.read_excel(file_path, skiprows=17)
+            return data
+        except UnicodeDecodeError as e:
+            logger.exception(f"Error in decoding the data file `{file_path}`: {e}")
+
     @classmethod
     def parse_row(cls, row: pd.Series) -> pd.Series:
 

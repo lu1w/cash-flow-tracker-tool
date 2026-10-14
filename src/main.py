@@ -9,20 +9,28 @@ if __name__ == "__main__":
 
 from src.categorizer.categorizer import Categorizer
 from src.combiner.combiner import merge_by_month
-from src.parser.parser import Parser
+from src.parser.parser import Preparser, Parser
 from src.parse_strategy.alipay_parse_strategy import AlipayParseStrategy
 # from src.parse_strategy.hsbc_parse_strategy import HsbcParseStrategy
-# from src.parse_strategy.wechat_parse_strategy import WechatParseStrategy, WechatRawParseStrategy
+from src.parse_strategy.wechat_parse_strategy import WechatPreparseStrategy, WechatParseStrategy  # , WechatRawParseStrategy
+from src.parse_strategy.wechat_parse_strategy_v1 import WechatRawParseStrategy  # TODO: move this to a pre-parse strategy
 from src.utils.logger import logger
 
 
 def main():
-    print("Welcome to cash flow tracker tool!")
+    print("Welcome to cashflow tracker tool!")
 
-    # 1. parse files
+    # 1. preparse file if needed
     for strategy in [
-        AlipayParseStrategy,
-        # WechatParseStrategy,
+        # WechatPreparseStrategy,
+    ]:
+        preparser = Preparser(strategy)
+        preparser.execute()
+
+    # 2. parse files
+    for strategy in [
+        # AlipayParseStrategy,
+        WechatParseStrategy,
         # HsbcParseStrategy,
         # WechatRawParseStrategy
     ]:
@@ -36,10 +44,10 @@ def main():
     accounts_for_testing = (Account.ALIPAY,)
     categorizer.process_all_standardized_files()
 
-    # 2. Combine monthly files of all accounts
+    # 3. Combine monthly files of all accounts
     merge_by_month()
 
-    # 3. Generate yearly file
+    # 4. Generate yearly file
 
 
 if __name__ == "__main__":

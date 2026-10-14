@@ -35,6 +35,7 @@ class AlipayParseStrategy(ParseStrategyBase):
     # refund_category = "退款"
 
     num_skip_rows = 23
+    ignored_columns = AlipayInputEntryModel.get_ignored_columns()
 
     ALIPAY_CASHFLOW_DIRECTION: Dict[str, CashflowDirection] = {
         "收入": CashflowDirection.INFLOW,
@@ -70,41 +71,48 @@ class AlipayParseStrategy(ParseStrategyBase):
     @override
     @classmethod
     def load_data(cls, file_path: Path) -> List[AlipayInputEntryModel]:
-        return [AlipayInputEntryModel.model_validate(row)
-                for row in cls._load_data_rows(file_path)]
-
-    @classmethod
-    def _load_data_rows(cls, file_path: Path) -> List[Dict[str, Any]]:
-        columns_to_drop = set(AlipayInputEntryModel.get_ignored_columns())
-
         try:
-            data = cls._load_csv(file_path, cls.encoding, columns_to_drop)
+            data_rows = cls._load_csv(file_path, cls.encoding)
         except UnicodeDecodeError:
             # If the original encoding fails (e.g. GBK), fallback to utf-8
             cls.encoding = "utf-8"
-            data = cls._load_csv(file_path, cls.encoding, columns_to_drop)
+            data_rows = cls._load_csv(file_path, cls.encoding)
 
-        logger.info(f"Data (encoding={cls.encoding}) loaded successfully from file {file_path}")
-        return data
+        logger.info(f"Data ({len(data_rows)} rows, encoding {cls.encoding}) loaded successfully from file {file_path}")
 
-    @classmethod
-    def _load_csv(cls, file_path: Path, encoding: str, columns_to_drop: set = set()) -> List[Dict[str, Any]]:
-        with open(file_path, mode='r', encoding=encoding, newline='') as f:
-            # Skip the required number of rows manually
-            for _ in range(cls.num_skip_rows):
-                next(f, None)
+        entry_models = [AlipayInputEntryModel.model_validate(row) for row in data_rows]
+        return entry_models
 
-            # Parse the remaining rows into a dictionary and strip any leading/trailing whitespaces
-            reader = csv.DictReader(f)
-            if reader.fieldnames:
-                reader.fieldnames = [field.strip() for field in reader.fieldnames]
+    # @classmethod
+    # def _load_data_rows(cls, file_path: Path) -> List[Dict[str, Any]]:
+    #     try:
+    #         data = cls._load_csv(file_path, cls.encoding, cls.ignored_columns)
+    #     except UnicodeDecodeError:
+    #         # If the original encoding fails (e.g. GBK), fallback to utf-8
+    #         cls.encoding = "utf-8"
+    #         data = cls._load_csv(file_path, cls.encoding, cls.ignored_columns)
 
-            # Build the list of rows, skipping unuseful columns
-            parsed_data = [
-                {k: v for k, v in row.items() if k not in columns_to_drop}
-                for row in reader
-            ]
-            return parsed_data
+    #     logger.info(f"Data (encoding={cls.encoding}) loaded successfully from file {file_path}")
+    #     return data
+
+    # @classmethod
+    # def _load_csv(cls, file_path: Path, encoding: str, ignored_columns: set = set()) -> List[Dict[str, Any]]:
+    #     with open(file_path, mode='r', encoding=encoding, newline='') as f:
+    #         # Skip the required number of rows manually
+    #         for _ in range(cls.num_skip_rows):
+    #             next(f, None)
+
+    #         # Parse the remaining rows into a dictionary and strip any leading/trailing whitespaces
+    #         reader = csv.DictReader(f)
+    #         if reader.fieldnames:
+    #             reader.fieldnames = [field.strip() for field in reader.fieldnames]
+
+    #         # Build the list of rows, skipping unuseful columns
+    #         parsed_data = [
+    #             {k: v for k, v in row.items() if k not in ignored_columns}
+    #             for row in reader
+    #         ]
+    #         return parsed_data
 
     @override
     @classmethod
@@ -112,14 +120,8 @@ class AlipayParseStrategy(ParseStrategyBase):
         cls,
         input_entry_model: AlipayInputEntryModel,
     ) -> TransactionEntryModel:
-
-        # Extract data using your original config safely
-        raw_amount = input_entry_model.amount  # float(row[AlipayColumn.AMOUNT.column_name])
-
-        # Assuming cashflow_direction behaves like a multiplier when multiplying numeric types
-        # (e.g. -1 for outbound, 1 for inbound)
+        raw_amount = input_entry_model.amount
         cashflow_direction = AlipayParseStrategy.ALIPAY_CASHFLOW_DIRECTION[input_entry_model.cashflow_direction]
-        # net_multiplier = int(cashflow_direction)
 
         def derive_category() -> CategoryInflow | CategoryOutflow:
             category: str = input_entry_model.category

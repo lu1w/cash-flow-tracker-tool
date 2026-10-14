@@ -79,6 +79,11 @@ def data_file__alipay_input_data() -> Path:
 
 
 @pytest.fixture(scope="session")
+def data_file__wechat_input_data() -> Path:
+    return Path(f"{FileConfig.INPUT_DATA_DIR}/wechat/wechat_input_data.csv")
+
+
+@pytest.fixture(scope="session")
 def data_models__alipay_input_data(data_file__alipay_input_data) -> List[AlipayInputEntryModel]:
     return _load_alipay_input_data_models(data_file__alipay_input_data)
 

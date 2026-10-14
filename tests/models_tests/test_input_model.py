@@ -13,6 +13,10 @@ from src.utils.logger import debug_log
 
 @pytest.mark.unit
 def test_alipay_input_model_validate__should_succeed(data_file__alipay_input_data):
-    data_rows = AlipayParseStrategy._load_data_rows(data_file__alipay_input_data)
+    data_rows = AlipayParseStrategy._load_csv(
+        data_file__alipay_input_data,
+        AlipayParseStrategy.encoding,
+        AlipayParseStrategy.ignored_columns
+    )
     for row in data_rows:
         AlipayInputEntryModel.model_validate(row)

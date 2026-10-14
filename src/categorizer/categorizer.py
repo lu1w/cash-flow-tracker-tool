@@ -14,7 +14,7 @@ from src.enum.category import Category, CategoryInflow, CategoryOutflow
 from src.enum.category_resolver import CategoryResolver
 from src.enum.column import Column
 from src.config.config import FileConfig
-from src.utils.file_paths_utils import map_file_path
+from src.utils.filename_util import map_file_path
 from src.utils.logger import logger, debug_log
 
 

@@ -2,7 +2,7 @@
 from decimal import Decimal
 from enum import Enum
 from pandas import Series
-from typing import override
+from typing import override, Any
 
 from src.utils.logger import logger
 
@@ -50,7 +50,7 @@ class CashflowDirection(Enum):
         return super()._missing_(value)
 
     @classmethod
-    def get_unknown(cls, row: Series):
+    def get_unknown(cls, row: Any):
         logger.warning(f"Unknown cashflow direction for row:\n{row}\n")
         return cls.UNKNOWN
 

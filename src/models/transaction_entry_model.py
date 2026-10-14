@@ -35,22 +35,17 @@ class TransactionEntryModel(BaseModel):
     account_balance: Annotated[Decimal, Field(alias="Account Balance")] = Decimal(0)
 
     # Notes/text columns (Optional)
-    description: Annotated[str, Field(default="", alias="Description")]  # The context for LLM
-    remark: Annotated[str, Field(default="", alias="Remark")] = ""  # User's own notes
+    transaction_status: Annotated[str, Field(alias="Transaction Status")] = ""  # TODO(PL25): use this field
+    description: Annotated[str, Field(alias="Description")] = ""  # The context for LLM
+    remark: Annotated[str, Field(alias="Remark")] = ""  # User's own notes
 
     # Boolean columns
-    is_aggregated: Annotated[bool | None, Field(default=None, alias="Is Aggregated")] = None
-    refunded: Annotated[bool | None, Field(default=None, alias="Refunded")] = None
-
-    # =====
+    is_aggregated: Annotated[bool | None, Field(alias="Is Aggregated")] = None
+    refunded: Annotated[bool | None, Field(alias="Refunded")] = None
 
     # `use_enum_values` display the enum typed fields with only the enum value, not a key-value pair of enum.name and enum.value https://www.prefect.io/blog/pydantic-enums-introduction
     # `validate_by_name` allows model constructor __init__() to accept the field name instead of just the alias
     model_config = ConfigDict(use_enum_values=True, validate_by_name=True)
-
-    class ConfigDict:
-        # allows instantiating Pydantic model using either the field's python variable name or its defined alias
-        populate_by_name = True
 
     @model_validator(mode="before")  # Runs before Pydantic’s internal parsing and validation
     @classmethod
