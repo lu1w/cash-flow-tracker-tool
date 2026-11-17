@@ -40,7 +40,7 @@ def merge_by_month():
             logger.warning(f"Skipping file without `(YYYY-MM).csv` pattern in the filename: {filename}")
 
     # Ensure output directory exists before writing files
-    os.makedirs(FileConfig.OUTPUT_DATA_MONTHLY_DIR, exist_ok=True)
+    os.makedirs(FileConfig.OUTPUT_MONTHLY_DATA_DIR, exist_ok=True)
 
     # Process each month individually
     for month_key, files in monthly_files.items():
@@ -71,7 +71,7 @@ def merge_by_month():
         combined_df = combined_df.sort_values(by=Column.DATE, ascending=False)
 
         final_filename = f"{month_key}.csv"
-        final_output_path = os.path.join(FileConfig.OUTPUT_DATA_MONTHLY_DIR, final_filename)
+        final_output_path = os.path.join(FileConfig.OUTPUT_MONTHLY_DATA_DIR, final_filename)
 
         combined_df.to_csv(final_output_path, index=False)
         logger.info(f"Saved monthly file to: {final_output_path}")

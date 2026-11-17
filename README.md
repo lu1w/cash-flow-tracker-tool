@@ -9,6 +9,12 @@ For personal usage of cashflow records analysis and visualization, based on repo
 2. Combine the account-monthly-files of each account into one all-accounts-monthly-file; combine the all-accounts-monthly-file to yearly-files
 3. Generate analysis 
 
+### Step 0 Upload transaction reports 
+
+For the files that needs to be preprocessed (e.g. changing from xlsx to csv), upload to `<account-name>-raw` directory; otherwise, upload to `<account-name>` directory. 
+
+The `<account-name>` is in lower-case, as configured in `dir_name()` in `account.py`. 
+
 ### Step 1 Report Files Parsing - Breakdown
 ```mermaid
 graph LR

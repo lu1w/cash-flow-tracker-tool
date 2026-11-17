@@ -11,9 +11,9 @@ from src.categorizer.categorizer import Categorizer
 from src.combiner.combiner import merge_by_month
 from src.parser.parser import Preparser, Parser
 from src.parse_strategy.alipay_parse_strategy import AlipayParseStrategy
-# from src.parse_strategy.hsbc_parse_strategy import HsbcParseStrategy
-from src.parse_strategy.wechat_parse_strategy import WechatPreparseStrategy, WechatParseStrategy  # , WechatRawParseStrategy
-from src.parse_strategy.wechat_parse_strategy_v1 import WechatRawParseStrategy  # TODO: move this to a pre-parse strategy
+from src.parse_strategy.hsbc_parse_strategy import HsbcParseStrategy
+from src.parse_strategy.wechat_parse_strategy import WechatPreparseStrategy, WechatParseStrategy
+from src.parse_strategy.wechat_parse_strategy_v1 import WechatRawParseStrategy
 from src.utils.logger import logger
 
 
@@ -30,8 +30,8 @@ def main():
     # 2. parse files
     for strategy in [
         # AlipayParseStrategy,
-        WechatParseStrategy,
-        # HsbcParseStrategy,
+        # WechatParseStrategy,
+        HsbcParseStrategy,
         # WechatRawParseStrategy
     ]:
         parser = Parser(strategy)

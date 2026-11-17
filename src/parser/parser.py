@@ -18,7 +18,9 @@ from src.enum.column import Column
 
 
 class Preparser(Generic[InputEntryModelT]):
-    def __init__(self, preparse_strategy: PreparseStrategyBase[InputEntryModelT]):
+    """Pre-processing the file so it is in CSV format."""
+
+    def __init__(self, preparse_strategy: type[PreparseStrategyBase[InputEntryModelT]]):
         self.parse_strategy = preparse_strategy
 
     def _process_file(self, file_path: Path) -> None:
@@ -26,12 +28,13 @@ class Preparser(Generic[InputEntryModelT]):
             # Load data
             logger.info(f"Start loading data for file `{file_path}`")
             entries = self.parse_strategy.load_data(file_path)
-
             logger.info(f"Data loaded, start preparsing file `{file_path}`")
 
+            # Ensure the output file exists
             preparsed_file = self.parse_strategy.ensure_output_file_path(f"{file_path.stem}.csv")
             logger.info(f"Writing {len(entries)} entries to {preparsed_file}")
 
+            # Write the output; in preparser, we simply write each entry as is in CSV
             headers = list(entries[0].model_dump(by_alias=True).keys())
             with open(preparsed_file, mode="w", newline="", encoding="utf-8") as file:
                 writer = csv.DictWriter(file, fieldnames=headers)
@@ -69,8 +72,9 @@ class Preparser(Generic[InputEntryModelT]):
 
 
 class Parser(Preparser, Generic[InputEntryModelT]):
-    def __init__(self, parse_strategy: ParseStrategyBase[InputEntryModelT]):
-        self.parse_strategy: ParseStrategyBase[InputEntryModelT] = parse_strategy
+    def __init__(self, parse_strategy: type[ParseStrategyBase[InputEntryModelT]]):
+        # parse_strategy is a class, not an instance; since all the methods for a strategy are class methods
+        self.parse_strategy = parse_strategy
 
     @override
     def _process_file(self, file_path: Path) -> None:

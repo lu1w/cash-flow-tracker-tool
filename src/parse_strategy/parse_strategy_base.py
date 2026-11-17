@@ -23,6 +23,10 @@ InputEntryModelT = TypeVar("InputEntryModelT", AlipayInputEntryModel, WechatInpu
 
 
 class PreparseStrategyBase(ABC, Generic[InputEntryModelT]):
+    """Abstract class that will be inherit by preparse strategies.
+    The child class need to at least implement `load_data()` and `ensure_output_file_path()`.
+    """
+
     # to be replaced
     account = Account.UNKNOWN
 
@@ -45,19 +49,25 @@ class PreparseStrategyBase(ABC, Generic[InputEntryModelT]):
 
     @classmethod
     @abstractmethod
-    def _get_parsed_data_dir_path(cls) -> Path:
-        """Defines where the parsed file should be stored."""
-        pass
-
-    @classmethod
-    @abstractmethod
     def ensure_output_file_path(cls, filename: str) -> Path:
         pass
 
 
 class ParseStrategyBase(PreparseStrategyBase[InputEntryModelT], Generic[InputEntryModelT]):
+    """Abstract class that will be inherit by preparse strategies.
+    The child class need to at least implement `load_data()` and `parse_entry()`.
+    """
+
     currency = Currency.UNKNOWN
     ignored_columns = set()
+
+    @classmethod
+    @abstractmethod
+    def parse_entry(
+        cls,
+        input_entry_model: InputEntryModelT,
+    ) -> TransactionEntryModel:
+        pass
 
     @classmethod
     def _load_csv(
@@ -83,6 +93,10 @@ class ParseStrategyBase(PreparseStrategyBase[InputEntryModelT], Generic[InputEnt
                 {k: v for k, v in row.items() if k not in cls.ignored_columns}
                 for row in reader
             ]
+            logger.info(
+                f"Data ({len(parsed_data)} rows, encoding {cls.encoding}) "
+                f"loaded successfully from file {file_path}"
+            )
             return parsed_data
 
     @override
@@ -97,14 +111,6 @@ class ParseStrategyBase(PreparseStrategyBase[InputEntryModelT], Generic[InputEnt
         standardized_dir_path.mkdir(parents=True, exist_ok=True)
         # .data/standardized/.wechat/WECHAT(202602).csv
         return standardized_dir_path / filename
-
-    @classmethod
-    @abstractmethod
-    def parse_entry(
-        cls,
-        input_entry_model: InputEntryModelT,
-    ) -> TransactionEntryModel:
-        pass
 
 
 if __name__ == "__main__":

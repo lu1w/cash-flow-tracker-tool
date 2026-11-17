@@ -39,12 +39,20 @@ class TransactionEntryModel(BaseModel):
     description: Annotated[str, Field(alias="Description")] = ""  # The context for LLM
     remark: Annotated[str, Field(alias="Remark")] = ""  # User's own notes
 
-    # Boolean columns
+    # Whether the trasaction needs to be break down into multiple items
+    # TODO(PAB1): currently None represent not manually checked; later we can
+    # support identify aggregation entries automatically? by then we just
+    # need a bool
     is_aggregated: Annotated[bool | None, Field(alias="Is Aggregated")] = None
-    refunded: Annotated[bool | None, Field(alias="Refunded")] = None
 
-    # `use_enum_values` display the enum typed fields with only the enum value, not a key-value pair of enum.name and enum.value https://www.prefect.io/blog/pydantic-enums-introduction
-    # `validate_by_name` allows model constructor __init__() to accept the field name instead of just the alias
+    # Whether the transaction is reverted
+    refunded: Annotated[bool, Field(alias="Refunded")] = False
+
+    # `use_enum_values`
+    #   - display the enum typed fields with only the enum value, not a key-value pair of enum.name and enum.value https://www.prefect.io/blog/pydantic-enums-introduction
+    #   - forces model.model_dump() to output the underlying raw values instead of the raw Enum objects
+    # `validate_by_name`
+    #   - allows model constructor __init__() to accept the field name instead of just the alias
     model_config = ConfigDict(use_enum_values=True, validate_by_name=True)
 
     @model_validator(mode="before")  # Runs before Pydantic’s internal parsing and validation

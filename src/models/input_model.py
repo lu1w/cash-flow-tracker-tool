@@ -17,12 +17,13 @@ from src.utils.logger import logger
 
 
 def clean_amount(value: str | Decimal) -> Decimal:
-    """Cleanser for dollar amount records. Value will be a `str` if reading from files, be can be `Decimal` is passed in via the model's Python Constructor."""
+    """Cleanser for dollar amount records. Value is a `str` when read from files, or a `Decimal` when passed to the model constructor."""
     if isinstance(value, str):
-        # Clean up formatting like "¥1,200.50" or " 100.00 "
-        if not value[0].isnumeric():
-            value = value[1:]
-        cleaned = value.replace(",", "").strip()
+        # Clean up formatting like "¥1,200.50", "-1,234.56", or " 100.00 ".
+        # Keep a leading sign; only drop a currency symbol.
+        cleaned = value.strip().replace(",", "")
+        if cleaned and not cleaned[0].isnumeric() and cleaned[0] not in "+-":
+            cleaned = cleaned[1:].strip()
         return Decimal(cleaned)
     return value
 
@@ -99,6 +100,25 @@ class WechatInputEntryModel(InputEntryBaseModel):
         if not isinstance(v, str):
             return str(v)
         return v
+
+
+class HsbcInputEntryModel(InputEntryBaseModel):
+    """Pydantic model representing a parsed row from an HSBC report."""
+
+    date: Annotated[date, Field(alias="Date")]
+    item_detail: Annotated[str, Field(alias="Description")]
+    net_amount: Annotated[Amount, Field(alias="Billing amount")]
+    currency: Annotated[str, Field(alias="Billing currency")]
+    balance: Annotated[Amount, Field(alias="Balance")]
+    balance_currency: Annotated[str, Field(alias="Balance currency")]
+
+    @field_validator("date", mode="before")
+    @classmethod
+    def parse_date(cls, value):
+        # HSBC exports dates as `dd/mm/yyyy` and has no time component.
+        if isinstance(value, str):
+            return datetime.strptime(value.strip(), "%d/%m/%Y").date()
+        return value
 
 
 if __name__ == "__main__":

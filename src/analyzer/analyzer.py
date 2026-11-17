@@ -125,7 +125,7 @@ def _show_pie_chart_on_amount_by_categories(
 
 
 def get_pie_chart_on_amount_by_categories_by_month():
-    output_monthly_dir_path = Path(f"{FileConfig.OUTPUT_DATA_MONTHLY_DIR}")
+    output_monthly_dir_path = Path(f"{FileConfig.OUTPUT_MONTHLY_DATA_DIR}")
 
     monthly_cashflow_file_path = output_monthly_dir_path / Path("2025-06.csv")
     amount_by_outflow_categories, amount_by_inflow_categories = _get_amount_by_categories(monthly_cashflow_file_path)
@@ -136,7 +136,7 @@ def get_pie_chart_on_amount_by_categories_by_year(year: str):
     # TODO(AN6): Aggregate the data per month, and display the yearly summary;
     #   can just concatenant the CSV file, and call _display_pie_chart_on_amount_by_categories directly on the yearly file,
     #   or dynamically aggregates the data from monthly file
-    output_monthly_dir_path = Path(f"{FileConfig.OUTPUT_DATA_MONTHLY_DIR}")
+    output_monthly_dir_path = Path(f"{FileConfig.OUTPUT_MONTHLY_DATA_DIR}")
 
     month_cashflow_file_paths = list(output_monthly_dir_path.glob(pattern=f"{year}*.csv"))
     yearly_amount_by_outflow_categories = {}

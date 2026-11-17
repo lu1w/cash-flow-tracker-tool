@@ -53,7 +53,7 @@ class ParseStrategyBase(ABC):
         return standardized_dir_path
 
     @classmethod
-    def build_output_file_path(cls, date_key: str) -> Path:
+    def ensure_output_file_path(cls, date_key: str) -> Path:
         # .data/standardized/.wechat/WECHAT(202602).csv
         return cls.ensure_standardized_data_dir_path() / f"{cls.account.name}({date_key}).csv"
 

@@ -9,7 +9,7 @@ sys.path.append(project_root)
 from src.config.config import FileConfig
 from src.enum.column import Column
 from src.enum.category_resolver import CategoryResolver
-from src.utils.file_paths_utils import map_file_path
+from src.utils.filename_util import map_file_path
 from src.utils.logger import logger
 
 MANUAL_CATEGORY_CONFIDENCE: Final[int] = 1

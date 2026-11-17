@@ -15,6 +15,7 @@ class Account(Enum):
     ALIPAY = ("Alipay", Currency.CNY)
     WECHAT = ("Wechat", Currency.CNY)
     HSBC_HKD = ("HSBC", Currency.HKD)
+    HSBC_RED_HKD = ("HSBC (Red)", Currency.HKD)
 
     CASH_AUD = (CASH, Currency.AUD)
     CASH_CNY = (CASH, Currency.CNY)
@@ -47,7 +48,17 @@ ALL_ACTIVE_ACCOUNTS = (Account.ALIPAY, Account.WECHAT, Account.HSBC_HKD)
 
 # Tests:
 if __name__ == "__main__":
-    # assert str(Account.HSBC_HKD) == "HSBC (HKD)"
+    # directory name
+    assert Account.ALIPAY.dir_name == "alipay"
+    assert Account.HSBC_HKD.dir_name == "hsbc_hkd"
+    assert Account.WECHAT.dir_name == "wechat"
+
+    # enum value
     assert Account.CASH_CNY.value == f"{CASH} (CNY)"
+    assert Account.HSBC_HKD.value == "HSBC (HKD)"
+
+    # others
+    assert str(Account.HSBC_HKD) == "Account.HSBC_HKD"
     assert Account.CASH_AUD.name == "CASH_AUD"
     assert Account.ALIPAY.name == "ALIPAY"
+    # assert Account.HSBC_RED_HKD.name == ""

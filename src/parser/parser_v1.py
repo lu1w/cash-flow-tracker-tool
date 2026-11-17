@@ -43,7 +43,7 @@ class Parser:
 
             # Writ data to monthly file
             for year_month, df in self.monthly_cashflow.items():
-                df.to_csv(self.parse_strategy.build_output_file_path(year_month),
+                df.to_csv(self.parse_strategy.ensure_output_file_path(year_month),
                           index=False, encoding="utf-8", mode="w")
 
             logger.info(f"Successfully generated monthly reports from file `{file_path}`")

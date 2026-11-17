@@ -57,7 +57,7 @@ class WechatCashflowDirection(Enum):
     OUTFLOW = "支出"
 
 
-class WechatParseStrategy(ParseStrategyBase):
+class WechatParseStrategy(ParseStrategyBase[WechatInputEntryModel]):
     account = Account.WECHAT
     currency = Currency.CNY
     file_extension = "csv"
@@ -115,6 +115,6 @@ class WechatParseStrategy(ParseStrategyBase):
             transaction_status=input_entry_model.transaction_status,
             description=input_entry_model.item_detail,
             remark=input_entry_model.remark or "",
-            is_aggregated=None,  # TODO: Handle item-splitting / aggregation checks
-            refunded=None        # TODO: Implement refund parsing logic here
+            is_aggregated=None,   # TODO(PAB1): Handle item-splitting / aggregation checks
+            refunded=False
         )

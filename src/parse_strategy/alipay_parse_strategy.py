@@ -24,7 +24,7 @@ from src.parse_strategy.parse_strategy_base import ParseStrategyBase
 from src.utils.logger import logger, debug_log
 
 
-class AlipayParseStrategy(ParseStrategyBase):
+class AlipayParseStrategy(ParseStrategyBase[AlipayInputEntryModel]):
     """Parsing strategy for handling Alipay transaction history data."""
 
     account = Account.ALIPAY
@@ -77,8 +77,6 @@ class AlipayParseStrategy(ParseStrategyBase):
             # If the original encoding fails (e.g. GBK), fallback to utf-8
             cls.encoding = "utf-8"
             data_rows = cls._load_csv(file_path, cls.encoding)
-
-        logger.info(f"Data ({len(data_rows)} rows, encoding {cls.encoding}) loaded successfully from file {file_path}")
 
         entry_models = [AlipayInputEntryModel.model_validate(row) for row in data_rows]
         return entry_models
@@ -156,6 +154,7 @@ class AlipayParseStrategy(ParseStrategyBase):
             amount_absolute=raw_amount,
             amount_net=cashflow_direction * raw_amount,
             description=input_entry_model.item_detail,
-            # Fields like account_balance, remark, is_aggregated, is_refunded
+            is_aggregated=None,  # TODO(PAB1): implement aggregation entry identificaiton
+            # Fields like account_balance, remark, is_aggregated, refunded
             # fallback onto the model's empty string defaults automatically!
         )
