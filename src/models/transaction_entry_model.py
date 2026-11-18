@@ -6,7 +6,6 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 from src.enum.account import Account
 from src.enum.cashflow_direction import CashflowDirection
 from src.enum.category import Category, CategoryOutflow, CategoryInflow
-from src.enum.category_resolver import CategoryResolver
 from src.enum.currency import Currency
 
 
@@ -18,9 +17,12 @@ class TransactionEntryModel(BaseModel):
 
     # Category columns
     category: Annotated[CategoryInflow | CategoryOutflow, Field(alias="Category")]
-    category_confidence: Annotated[float, Field(alias="Category Confidence")]
     # TODO(PL29): remove resolver
-    category_resolver: Annotated[CategoryResolver, Field(alias="Category Resolver")]
+    category_by_rules: Annotated[CategoryInflow | CategoryOutflow | None, Field(alias="Category (Rules)")] = None
+    category_by_categorizer: Annotated[CategoryInflow | CategoryOutflow |
+                                       None, Field(alias="Category (Categorizer)")] = None
+    categorizer_confidence: Annotated[float, Field(alias="Categorizer Confidence")] = 0
+    category_by_human: Annotated[CategoryInflow | CategoryOutflow | None, Field(alias="Category (Manual)")] = None
     category_raw: Annotated[str, Field(alias="Raw Category")]
 
     # Monetary columns

@@ -8,7 +8,6 @@ from pathlib import Path
 
 from src.categorizer.categorizer import Categorizer
 from src.enum.account import Account
-from src.enum.category_resolver import CategoryResolver
 from src.config.config import FileConfig
 from src.enum.column import Column
 from src.utils.logger import debug_log
@@ -47,5 +46,5 @@ def test_process_all_standardized_files(
                                  & (output_df[Column.CATEGORY] != "Unknown")]
     # TODO(PL29): remove resolver, and assert on the category under the categorizer column
     assert not categorized_rows.empty
-    assert (categorized_rows[Column.CATEGORY_RESOLVER.value] == CategoryResolver.EMBEDDING).all(
-    ), "Some categorized rows do not have the resolver marked as CategoryResolver.EMBEDDING"
+    # assert (categorized_rows[Column.CATEGORY_RESOLVER.value] == CategoryResolver.EMBEDDING).all(
+    # ), "Some categorized rows do not have the resolver marked as CategoryResolver.EMBEDDING"

@@ -13,7 +13,7 @@ from src.parser.parser import Preparser, Parser
 from src.parse_strategy.alipay_parse_strategy import AlipayParseStrategy
 from src.parse_strategy.hsbc_parse_strategy import HsbcParseStrategy
 from src.parse_strategy.wechat_parse_strategy import WechatPreparseStrategy, WechatParseStrategy
-from src.parse_strategy.v1.wechat_parse_strategy import WechatRawParseStrategy
+# from src.parse_strategy.v1.wechat_parse_strategy import WechatRawParseStrategy
 from src.utils.logger import logger
 
 

@@ -11,7 +11,6 @@ import pytest
 from src.enum.account import Account
 from src.enum.cashflow_direction import CashflowDirection
 from src.enum.category import CategoryInflow, CategoryOutflow
-from src.enum.category_resolver import CategoryResolver
 from src.enum.currency import Currency
 from src.parse_strategy.hsbc_parse_strategy import HsbcParseStrategy
 
@@ -46,9 +45,10 @@ def test_parse_entry__should_parse_correct_field_values(data_file__hsbc_input_da
     rebate = HsbcParseStrategy.parse_entry(entries[0])
     assert rebate.date == datetime(2026, 3, 6)
     assert rebate.category == CategoryInflow.CASH_REBATE.value
+    assert rebate.category_by_rules == rebate.category
+    assert not rebate.category_by_categorizer
+    assert not rebate.category_by_human
     assert rebate.category_raw == "CREDIT AS ADVISED"
-    assert rebate.category_resolver == CategoryResolver.RULES.value
-    assert rebate.category_confidence == 0.1
     assert rebate.account == Account.HSBC_HKD.value
     assert rebate.currency == Currency.HKD.value
     assert rebate.cashflow_direction == CashflowDirection.INFLOW.display_name
@@ -61,6 +61,9 @@ def test_parse_entry__should_parse_correct_field_values(data_file__hsbc_input_da
 
     purchase = HsbcParseStrategy.parse_entry(entries[1])
     assert purchase.category == CategoryOutflow.UNKNOWN.value
+    assert purchase.category_by_rules == purchase.category
+    assert not purchase.category_by_categorizer
+    assert not purchase.category_by_human
     assert purchase.cashflow_direction == CashflowDirection.OUTFLOW.display_name
     assert purchase.amount_absolute == Decimal("45.60")
     assert purchase.amount_net == Decimal("-45.60")

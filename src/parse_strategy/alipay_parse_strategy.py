@@ -12,7 +12,6 @@ project_root = str(Path(__file__).parent.parent.parent)
 sys.path.append(project_root)
 from src.enum.column import Column
 from src.enum.currency import Currency
-from src.enum.category_resolver import CategoryResolver
 from src.enum.category import Category, CategoryInflow, CategoryOutflow
 from src.enum.account import Account
 from src.enum.cashflow_direction import CashflowDirection
@@ -109,11 +108,11 @@ class AlipayParseStrategy(ParseStrategyBase[AlipayInputEntryModel]):
                 case _:
                     return CategoryOutflow.UNKNOWN  # TODO(PL9): have a generic unknown category
 
+        category = derive_category()
         return TransactionEntryModel(
             date=input_entry_model.date_time,
-            category=derive_category(),
-            category_confidence=0.1,
-            category_resolver=CategoryResolver.RULES,
+            category=category,
+            category_by_rules=category,
             category_raw=input_entry_model.category,
             currency=cls.currency,
             account=cls.account,

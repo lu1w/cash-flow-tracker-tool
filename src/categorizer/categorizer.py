@@ -11,7 +11,7 @@ project_root = str(Path(__file__).parent.parent.parent)
 sys.path.append(project_root)
 from src.enum.account import Account, ALL_ACTIVE_ACCOUNTS
 from src.enum.category import Category, CategoryInflow, CategoryOutflow
-from src.enum.category_resolver import CategoryResolver
+# from src.enum.category_resolver import CategoryResolver
 from src.enum.column import Column
 from src.config.config import FileConfig
 from src.utils.filename_util import map_file_path
@@ -44,17 +44,18 @@ class Categorizer():
         Load a labeled reference set in a CSV and encode it.
         The reference CSV must have columns: Description, Category
         """
+        # Load file
         reference_data_dir = Path(FileConfig.CATEGORY_REFERENCE_DATA_DIR) / account_dir_name
         reference_files = list(reference_data_dir.glob("*.csv"))
         if not reference_files:
             logger.warning(f"No reference CSV files found in {reference_data_dir}")
             return None
 
+        # Build reference
         logger.info(f"Building reference index from {len(reference_files)} files in {reference_data_dir}")
-
         reference_df = pd.concat([pd.read_csv(file) for file in reference_files], ignore_index=True)
         descriptions = reference_df[Column.DESCRIPTION.value].tolist()
-        embeddings = self.model.encode(descriptions, show_progress_bar=False)
+        embeddings: np.ndarray = self.model.encode(descriptions, show_progress_bar=False)
 
         return reference_df, embeddings
 
@@ -108,8 +109,8 @@ class Categorizer():
             score: Tensor = best_scores[i]
             if score >= EMBEDDING_THRESHOLD:
                 df.at[original_idx, Column.CATEGORY] = reference_df.iloc[best_indices[i].item()][Column.CATEGORY]
-                df.at[original_idx, Column.CATEGORY_CONFIDENCE] = round(float(score), 4)
-                df.at[original_idx, Column.CATEGORY_RESOLVER] = CategoryResolver.EMBEDDING
+                # df.at[original_idx, Column.CATEGORY_CONFIDENCE] = round(float(score), 4)
+                # df.at[original_idx, Column.CATEGORY_RESOLVER] = CategoryResolver.EMBEDDING
 
         total = len(df)
         logger.info(f"Categorized before embedding: {total - uncategorized_mask.sum()}/{total}\n" +

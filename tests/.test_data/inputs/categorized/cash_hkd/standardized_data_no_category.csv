@@ -1,5 +1,5 @@
 Date,Category,Category Confidence,Category Resolver,Raw Category,Account,Currency,Incoming(+)/Outgoing(-),Absolute Amount,Net Amount,Account Balance,Transaction Status,Description,Remark,Is Aggregated,Refunded
 2026-03-29 17:14:33,Unknown,0.1,rules,日用百货,Alipay,CNY,Outgoing,17.0,-17.0,0,,洗脸巾壁挂式绵柔巾,,,
-2026-03-27 20:16:27,Transportation,0.8104,embedding,其他,Alipay,CNY,Outgoing,15.4,-15.4,0,,Taxi,,,
-2026-03-26 21:16:07,Transportation,0.6419,embedding,POS MDC   (06MAR26)P     TRIP.COM,Alipay,CNY,Outgoing,53.14,0.0,0,,Didi,,,
+2026-03-27 20:16:27,Transportation,0.1,rules,其他,Alipay,CNY,Outgoing,15.4,-15.4,0,,Taxi,,,
+2026-03-26 21:16:07,Transportation,0.1,rules,POS MDC   (06MAR26)P     TRIP.COM,Alipay,CNY,Outgoing,53.14,0.0,0,,Didi,,,
 2026-03-25 20:59:58,Unknown,0.1,rules,服饰装扮,Alipay,CNY,Outgoing,1210.02,0.0,0,,羊皮月牙hobo包百搭通勤斜挎单肩腋下包包女,,,

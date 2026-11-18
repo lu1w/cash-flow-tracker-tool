@@ -11,7 +11,6 @@ sys.path.append(project_root)
 from src.enum.account import Account
 from src.enum.cashflow_direction import CashflowDirection
 from src.enum.category import CategoryInflow, CategoryOutflow
-from src.enum.category_resolver import CategoryResolver
 from src.enum.currency import Currency
 from src.models.input_model import HsbcInputEntryModel
 from src.models.transaction_entry_model import TransactionEntryModel
@@ -53,11 +52,11 @@ class HsbcParseStrategy(ParseStrategyBase[HsbcInputEntryModel]):
         # HSBC dates have no time. Store midnight so the standardized column stays a datetime.
         date = datetime.combine(input_entry_model.date, time.min)
 
+        category = derive_category()
         return TransactionEntryModel(
             date=date,
-            category=derive_category(),
-            category_confidence=0.1,
-            category_resolver=CategoryResolver.RULES,
+            category=category,
+            category_by_rules=category,
             category_raw=input_entry_model.item_detail,  # no "" since pydantic rejects emptry string for literal type
             currency=cls.currency,
             account=cls.account,

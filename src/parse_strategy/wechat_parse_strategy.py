@@ -15,7 +15,6 @@ from src.parse_strategy.parse_strategy_base import PreparseStrategyBase, ParseSt
 from src.utils.logger import logger, debug_log
 from src.enum.account import Account
 from src.enum.cashflow_direction import CashflowDirection
-from src.enum.category_resolver import CategoryResolver
 from src.enum.category import Category, CategoryInflow, CategoryOutflow
 from src.enum.column import Column
 from src.enum.currency import Currency
@@ -100,11 +99,11 @@ class WechatParseStrategy(ParseStrategyBase[WechatInputEntryModel]):
                     # Using OUTFLOW.UNKNOWN as a safe typing fallback for unhandled directions
                     return CategoryOutflow.UNKNOWN
 
+        category = derive_category()
         return TransactionEntryModel(
             date=input_entry_model.date_time,
-            category=derive_category(),
-            category_confidence=0.1,
-            category_resolver=CategoryResolver.RULES,
+            category=category,
+            category_by_rules=category,
             category_raw=f"{input_entry_model.category} - {input_entry_model.counterparty}",
             account=cls.account,  # Assuming account configuration lives on Strategy class
             currency=cls.currency,  # Assuming currency configuration lives on Strategy class
