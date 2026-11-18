@@ -72,3 +72,8 @@ extraPaths = ["."]
 
 [tool.mypy]
 mypy_path = "."
+
+[dependency-groups]
+dev = [
+    "pandas-stubs>=3.1.0.261029",
+]

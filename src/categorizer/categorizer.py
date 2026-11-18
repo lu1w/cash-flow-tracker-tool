@@ -54,7 +54,7 @@ class Categorizer():
 
         reference_df = pd.concat([pd.read_csv(file) for file in reference_files], ignore_index=True)
         descriptions = reference_df[Column.DESCRIPTION.value].tolist()
-        embeddings: np.ndarray = self.model.encode(descriptions, show_progress_bar=False)
+        embeddings = self.model.encode(descriptions, show_progress_bar=False)
 
         return reference_df, embeddings
 
@@ -86,7 +86,7 @@ class Categorizer():
             logger.info("All rows categorized, no need to apply embedding")
             return df
 
-        uncategorized_description_embeddings: np.ndarray = self.model.encode(
+        uncategorized_description_embeddings = self.model.encode(
             uncategorized[Column.DESCRIPTION.value].tolist(),
             show_progress_bar=False,
         )
@@ -151,7 +151,7 @@ class Categorizer():
     def process_all_standardized_files(
         self,
         standardized_file_dir: str = FileConfig.STANDARDIZED_DATA_DIR,
-        accounts: Iterable[Account | str] = ALL_ACTIVE_ACCOUNTS,
+        accounts: Iterable[Account] = ALL_ACTIVE_ACCOUNTS,
         skip_categorization_if_missing_reference: bool = False
     ) -> None:
         for account in accounts:
