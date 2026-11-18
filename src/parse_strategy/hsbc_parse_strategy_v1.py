@@ -51,7 +51,7 @@ class HsbcParseStrategy(ParseStrategyBase):
 
     @override
     @classmethod
-    def load_data(cls, file_path: Path) -> DataFrame:
+    def load_data(cls, file_path: Path) -> pd.DataFrame:
         try:
             columns_to_drop = HsbcColumn.get_unuseful_columns()
             data = pd.read_csv(file_path, encoding=cls.encoding).drop(columns_to_drop, axis=1)

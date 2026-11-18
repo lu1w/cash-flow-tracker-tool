@@ -19,6 +19,7 @@ class TransactionEntryModel(BaseModel):
     # Category columns
     category: Annotated[CategoryInflow | CategoryOutflow, Field(alias="Category")]
     category_confidence: Annotated[float, Field(alias="Category Confidence")]
+    # TODO(PL29): remove resolver
     category_resolver: Annotated[CategoryResolver, Field(alias="Category Resolver")]
     category_raw: Annotated[str, Field(alias="Raw Category")]
 

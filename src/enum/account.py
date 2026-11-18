@@ -56,6 +56,7 @@ if __name__ == "__main__":
     # enum value
     assert Account.CASH_CNY.value == f"{CASH} (CNY)"
     assert Account.HSBC_HKD.value == "HSBC (HKD)"
+    assert Account.ALIPAY.value == "Alipay"
 
     # others
     assert str(Account.HSBC_HKD) == "Account.HSBC_HKD"

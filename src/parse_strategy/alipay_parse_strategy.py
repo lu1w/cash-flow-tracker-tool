@@ -1,10 +1,8 @@
 
 import sys
-import csv
 from enum import Enum
 from pathlib import Path
 
-import pandas as pd
 from pandas import DataFrame, Series
 from typing import List, Dict, Callable, override, Any
 
@@ -81,37 +79,6 @@ class AlipayParseStrategy(ParseStrategyBase[AlipayInputEntryModel]):
         entry_models = [AlipayInputEntryModel.model_validate(row) for row in data_rows]
         return entry_models
 
-    # @classmethod
-    # def _load_data_rows(cls, file_path: Path) -> List[Dict[str, Any]]:
-    #     try:
-    #         data = cls._load_csv(file_path, cls.encoding, cls.ignored_columns)
-    #     except UnicodeDecodeError:
-    #         # If the original encoding fails (e.g. GBK), fallback to utf-8
-    #         cls.encoding = "utf-8"
-    #         data = cls._load_csv(file_path, cls.encoding, cls.ignored_columns)
-
-    #     logger.info(f"Data (encoding={cls.encoding}) loaded successfully from file {file_path}")
-    #     return data
-
-    # @classmethod
-    # def _load_csv(cls, file_path: Path, encoding: str, ignored_columns: set = set()) -> List[Dict[str, Any]]:
-    #     with open(file_path, mode='r', encoding=encoding, newline='') as f:
-    #         # Skip the required number of rows manually
-    #         for _ in range(cls.num_skip_rows):
-    #             next(f, None)
-
-    #         # Parse the remaining rows into a dictionary and strip any leading/trailing whitespaces
-    #         reader = csv.DictReader(f)
-    #         if reader.fieldnames:
-    #             reader.fieldnames = [field.strip() for field in reader.fieldnames]
-
-    #         # Build the list of rows, skipping unuseful columns
-    #         parsed_data = [
-    #             {k: v for k, v in row.items() if k not in ignored_columns}
-    #             for row in reader
-    #         ]
-    #         return parsed_data
-
     @override
     @classmethod
     def parse_entry(
@@ -155,6 +122,4 @@ class AlipayParseStrategy(ParseStrategyBase[AlipayInputEntryModel]):
             amount_net=cashflow_direction * raw_amount,
             description=input_entry_model.item_detail,
             is_aggregated=None,  # TODO(PAB1): implement aggregation entry identificaiton
-            # Fields like account_balance, remark, is_aggregated, refunded
-            # fallback onto the model's empty string defaults automatically!
         )

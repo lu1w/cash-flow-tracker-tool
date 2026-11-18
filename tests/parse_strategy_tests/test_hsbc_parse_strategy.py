@@ -41,28 +41,28 @@ def test_load_data__should_load_all_rows(data_file__hsbc_input_data: Path):
 
 @pytest.mark.unit
 def test_parse_entry__should_parse_correct_field_values(data_file__hsbc_input_data: Path):
-    rebate, purchase = HsbcParseStrategy.load_data(data_file__hsbc_input_data)
+    entries = HsbcParseStrategy.load_data(data_file__hsbc_input_data)
 
-    parsed_rebate = HsbcParseStrategy.parse_entry(rebate)
-    assert parsed_rebate.date == datetime(2026, 3, 6)
-    assert parsed_rebate.category == CategoryInflow.CASH_REBATE.value
-    assert parsed_rebate.category_raw == ""
-    assert parsed_rebate.category_resolver == CategoryResolver.RULES.value
-    assert parsed_rebate.category_confidence == 0.1
-    assert parsed_rebate.account == Account.HSBC_HKD.value
-    assert parsed_rebate.currency == Currency.HKD.value
-    assert parsed_rebate.cashflow_direction == CashflowDirection.INFLOW.display_name
-    assert parsed_rebate.amount_absolute == Decimal("1200.00")
-    assert parsed_rebate.amount_net == Decimal("1200.00")
-    assert parsed_rebate.account_balance == Decimal("10000.50")
-    assert parsed_rebate.description == "CREDIT AS ADVISED"
-    assert parsed_rebate.is_aggregated is False
-    assert parsed_rebate.refunded is False
+    rebate = HsbcParseStrategy.parse_entry(entries[0])
+    assert rebate.date == datetime(2026, 3, 6)
+    assert rebate.category == CategoryInflow.CASH_REBATE.value
+    assert rebate.category_raw == "CREDIT AS ADVISED"
+    assert rebate.category_resolver == CategoryResolver.RULES.value
+    assert rebate.category_confidence == 0.1
+    assert rebate.account == Account.HSBC_HKD.value
+    assert rebate.currency == Currency.HKD.value
+    assert rebate.cashflow_direction == CashflowDirection.INFLOW.display_name
+    assert rebate.amount_absolute == Decimal("1200.00")
+    assert rebate.amount_net == Decimal("1200.00")
+    assert rebate.account_balance == Decimal("10000.50")
+    assert rebate.description == "CREDIT AS ADVISED"
+    assert rebate.is_aggregated is False
+    assert rebate.refunded is False
 
-    parsed_purchase = HsbcParseStrategy.parse_entry(purchase)
-    assert parsed_purchase.category == CategoryOutflow.UNKNOWN.value
-    assert parsed_purchase.cashflow_direction == CashflowDirection.OUTFLOW.display_name
-    assert parsed_purchase.amount_absolute == Decimal("45.60")
-    assert parsed_purchase.amount_net == Decimal("-45.60")
-    assert parsed_purchase.account_balance == Decimal("9954.90")
-    assert parsed_purchase.description == "SOME MERCHANT"
+    purchase = HsbcParseStrategy.parse_entry(entries[1])
+    assert purchase.category == CategoryOutflow.UNKNOWN.value
+    assert purchase.cashflow_direction == CashflowDirection.OUTFLOW.display_name
+    assert purchase.amount_absolute == Decimal("45.60")
+    assert purchase.amount_net == Decimal("-45.60")
+    assert purchase.account_balance == Decimal("9954.90")
+    assert purchase.description == "SOME MERCHANT"

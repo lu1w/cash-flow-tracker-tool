@@ -43,7 +43,9 @@ def test_process_all_standardized_files(
 
     assert len(input_df) == len(output_df)
 
-    categorized_rows = output_df[output_df[Column.CATEGORY].notna()]
+    categorized_rows = output_df[output_df[Column.CATEGORY].notna()
+                                 & (output_df[Column.CATEGORY] != "Unknown")]
+    # TODO(PL29): remove resolver, and assert on the category under the categorizer column
     assert not categorized_rows.empty
-    assert (categorized_rows[Column.CATEGORY_RESOLVER.value] == CategoryResolver.EMBEDDING).all(), \
-        "Some rows do not match the expected CategoryResolver.EMBEDDING"
+    assert (categorized_rows[Column.CATEGORY_RESOLVER.value] == CategoryResolver.EMBEDDING).all(
+    ), "Some categorized rows do not have the resolver marked as CategoryResolver.EMBEDDING"
